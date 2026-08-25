@@ -6,4 +6,12 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss(), crx({ manifest })],
+  build: {
+    rollupOptions: {
+      input: {
+        popup: "index.html",
+        options: "options.html",
+      },
+    },
+  },
 });

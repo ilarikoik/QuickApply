@@ -1,8 +1,21 @@
 export default function Home() {
+  const profileLength: number = 0;
+
+  if (profileLength === 0) {
+    return (
+      <div className="flex font-mono bg-background text-text">
+        <h1 className="flex w-full justify-center text-lg text-center">
+          Please add a profile to continue.
+        </h1>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex items-center justify-between w-full p-4 bg-background text-text">
-      <h1 className="text-2xl font-bold">Home Page</h1>
-      <p>Welcome to the home page!</p>
+    <div className="flex font-mono bg-background text-text">
+      <h1 className="flex w-full justify-center text-lg font-bold">
+        Current profile: ----
+      </h1>
     </div>
   );
 }

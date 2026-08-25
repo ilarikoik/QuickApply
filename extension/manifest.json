@@ -2,6 +2,10 @@
   "manifest_version": 3,
   "name": "QuickApply",
   "version": "0.1.0",
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
   "description": "Automatisoi työhakemuslomakkeiden täyttö",
   "action": {
     "default_popup": "index.html"
