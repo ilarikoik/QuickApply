@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "QuickApply",
+  "version": "0.1.0",
+  "description": "Automatisoi työhakemuslomakkeiden täyttö",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/content-script.ts"]
+    }
+  ],
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["http://localhost:8080/*"]
+}
