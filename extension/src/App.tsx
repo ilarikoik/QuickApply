@@ -1,18 +1,22 @@
-import { useState } from "react";
-import heroImg from "./assets/hero.png";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "./assets/vite.svg";
 import "./App.css";
+import NavBar from "./components/NavBar";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import { ThemeProvider } from "./theme/ThemeContext";
 
 function App() {
-  const [count, setCount] = useState(0);
-
+  // const user = true;
+  const user = false;
+  if (!user) {
+    return <Login />;
+  }
   return (
-    <>
-      <div className="flex flex-col items-center justify-center gap-4 min-h-[400px]">
-        <h1>Profile</h1>
+    <ThemeProvider>
+      <div className="min-h-100 bg-background text-text">
+        <NavBar />
+        <Home />
       </div>
-    </>
+    </ThemeProvider>
   );
 }
 
