@@ -1,20 +1,17 @@
 import { useState } from "react";
 
 interface ProfileFormData {
-  // Vaihe 1: Perustiedot
   firstName: string;
   lastName: string;
   email: string;
   phone: string;
   dateOfBirth: string;
 
-  // Vaihe 2: Osoite
   address: string;
   city: string;
   postalCode: string;
   country: string;
 
-  // Vaihe 3: Ammatilliset tiedot
   currentTitle: string;
   yearsOfExperience: string;
   education: string;
@@ -23,7 +20,6 @@ interface ProfileFormData {
   github: string;
   portfolio: string;
 
-  // Vaihe 4: Lisätiedot
   summary: string;
   salaryExpectation: string;
   availability: string;

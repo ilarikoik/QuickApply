@@ -5,8 +5,8 @@ import Login from "./pages/Login";
 import { ThemeProvider } from "./theme/ThemeContext";
 
 function App() {
-  const user = true;
-  // const user = false;
+  // const user = true;
+  const user = false;
   if (!user) {
     return <Login />;
   }
