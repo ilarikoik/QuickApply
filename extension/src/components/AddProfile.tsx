@@ -1,4 +1,10 @@
 import { useState } from "react";
+import { translateText } from "../lib/translate";
+
+interface LocalizedText {
+  fi: string;
+  en: string;
+}
 
 interface ProfileFormData {
   firstName: string;
@@ -11,19 +17,19 @@ interface ProfileFormData {
   city: string;
   postalCode: string;
   country: string;
-
-  currentTitle: string;
+  salaryExpectation: string;
+  willingToRelocate: boolean;
   yearsOfExperience: string;
-  education: string;
   school: string;
   linkedin: string;
   github: string;
   portfolio: string;
 
-  summary: string;
-  salaryExpectation: string;
-  availability: string;
-  willingToRelocate: boolean;
+  // englanniksi myös
+  currentTitle: LocalizedText;
+  education: LocalizedText;
+  summary: LocalizedText;
+  availability: LocalizedText;
 }
 
 const initialFormData: ProfileFormData = {
@@ -36,16 +42,16 @@ const initialFormData: ProfileFormData = {
   city: "",
   postalCode: "",
   country: "",
-  currentTitle: "",
+  currentTitle: { fi: "", en: "" },
   yearsOfExperience: "",
-  education: "",
+  education: { fi: "", en: "" },
   school: "",
   linkedin: "",
   github: "",
   portfolio: "",
-  summary: "",
+  summary: { fi: "", en: "" },
   salaryExpectation: "",
-  availability: "",
+  availability: { fi: "", en: "" },
   willingToRelocate: false,
 };
 
@@ -54,6 +60,7 @@ const steps = [
   { number: 2, label: "Osoite" },
   { number: 3, label: "Ammatilliset tiedot" },
   { number: 4, label: "Lisätiedot" },
+  { number: 5, label: "Tarkista käännökset" },
 ];
 
 function Field({
@@ -73,12 +80,23 @@ function Field({
   );
 }
 
+// ASETA FALLBACKIT KOULUTUKSILLE KUN NYT ESIM tradenomi -> brand names
+
 const inputClasses =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 transition";
 
 export default function AddProfile() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<ProfileFormData>(initialFormData);
+  const [translatingField, setTranslatingField] = useState<string | null>(null);
+
+  const goNext = () => setStep((s) => Math.min(s + 1, steps.length));
+  const goPrev = () => setStep((s) => Math.max(s - 1, 1));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Profiilin tiedot:", formData);
+  };
 
   const handleChange = (
     field: keyof ProfileFormData,
@@ -87,12 +105,39 @@ export default function AddProfile() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const goNext = () => setStep((s) => Math.min(s + 1, steps.length));
-  const goPrev = () => setStep((s) => Math.max(s - 1, 1));
+  const handleLocalizedChange = (
+    field: "currentTitle" | "education" | "summary" | "availability",
+    lang: "fi" | "en",
+    value: string,
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: { ...prev[field], [lang]: value },
+    }));
+  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Profiilin tiedot:", formData);
+  const handleTranslateAll = async () => {
+    setTranslatingField("all");
+    try {
+      const [titleEn, eduEn, summaryEn, availEn] = await Promise.all([
+        translateText(formData.currentTitle.fi, "EN"),
+        translateText(formData.education.fi, "EN"),
+        translateText(formData.summary.fi, "EN"),
+        translateText(formData.availability.fi, "EN"),
+      ]);
+
+      setFormData((prev) => ({
+        ...prev,
+        currentTitle: { ...prev.currentTitle, en: titleEn },
+        education: { ...prev.education, en: eduEn },
+        summary: { ...prev.summary, en: summaryEn },
+        availability: { ...prev.availability, en: availEn },
+      }));
+    } catch (err) {
+      console.error("Käännös epäonnistui:", err);
+    } finally {
+      setTranslatingField(null);
+    }
   };
 
   return (
@@ -231,8 +276,10 @@ export default function AddProfile() {
                 type="text"
                 className={inputClasses}
                 placeholder="Ohjelmistokehittäjä"
-                value={formData.currentTitle}
-                onChange={(e) => handleChange("currentTitle", e.target.value)}
+                value={formData.currentTitle.fi}
+                onChange={(e) =>
+                  handleLocalizedChange("currentTitle", "fi", e.target.value)
+                }
               />
             </Field>
             <Field label="Työkokemus (vuotta)">
@@ -253,8 +300,10 @@ export default function AddProfile() {
                   type="text"
                   className={inputClasses}
                   placeholder="Tradenomi"
-                  value={formData.education}
-                  onChange={(e) => handleChange("education", e.target.value)}
+                  value={formData.education.fi}
+                  onChange={(e) =>
+                    handleLocalizedChange("education", "fi", e.target.value)
+                  }
                 />
               </Field>
               <Field label="Oppilaitos">
@@ -303,8 +352,10 @@ export default function AddProfile() {
               <textarea
                 className={`${inputClasses} min-h-[100px] resize-none`}
                 placeholder="Kerro lyhyesti itsestäsi ja osaamisestasi..."
-                value={formData.summary}
-                onChange={(e) => handleChange("summary", e.target.value)}
+                value={formData.summary.fi}
+                onChange={(e) =>
+                  handleLocalizedChange("summary", "fi", e.target.value)
+                }
               />
             </Field>
             <div className="grid grid-cols-2 gap-4">
@@ -324,8 +375,10 @@ export default function AddProfile() {
                   type="text"
                   className={inputClasses}
                   placeholder="1 kuukauden kuluttua"
-                  value={formData.availability}
-                  onChange={(e) => handleChange("availability", e.target.value)}
+                  value={formData.availability.fi}
+                  onChange={(e) =>
+                    handleLocalizedChange("availability", "fi", e.target.value)
+                  }
                 />
               </Field>
             </div>
@@ -345,7 +398,68 @@ export default function AddProfile() {
           </>
         )}
 
-        {/* Navigointipainikkeet */}
+        {step === 5 && (
+          <>
+            <button
+              type="button"
+              onClick={handleTranslateAll}
+              disabled={translatingField === "all"}
+              className="mb-2 text-sm text-slate-600 underline hover:text-slate-900 disabled:opacity-50 hover:cursor-pointer"
+            >
+              {translatingField === "all"
+                ? "Käännetään..."
+                : "Käännä kaikki automaattisesti →"}
+            </button>
+
+            <Field label="Current title">
+              <input
+                type="text"
+                className={inputClasses}
+                placeholder="Software Developer"
+                value={formData.currentTitle.en}
+                onChange={(e) =>
+                  handleLocalizedChange("currentTitle", "en", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="Education">
+              <input
+                type="text"
+                className={inputClasses}
+                placeholder="Information Technology, B.Eng"
+                value={formData.education.en}
+                onChange={(e) =>
+                  handleLocalizedChange("education", "en", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="Summary">
+              <textarea
+                className={`${inputClasses} min-h-[100px] resize-none`}
+                placeholder="Tell briefly about yourself and your skills..."
+                value={formData.summary.en}
+                onChange={(e) =>
+                  handleLocalizedChange("summary", "en", e.target.value)
+                }
+              />
+            </Field>
+
+            <Field label="Availability">
+              <input
+                type="text"
+                className={inputClasses}
+                placeholder="Available in 1 month"
+                value={formData.availability.en}
+                onChange={(e) =>
+                  handleLocalizedChange("availability", "en", e.target.value)
+                }
+              />
+            </Field>
+          </>
+        )}
+
         <div className="flex items-center justify-between pt-4">
           <button
             type="button"
