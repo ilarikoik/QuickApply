@@ -18,7 +18,7 @@ export async function translateText(
   });
 
   if (!response.ok) {
-    throw new Error(`Käännös epäonnistui: ${response.status}`);
+    throw new Error(`Translation error: ${response.status}`);
   }
 
   const data = await response.json();

@@ -81,7 +81,6 @@ function Field({
 }
 
 // ASETA FALLBACKIT KOULUTUKSILLE KUN NYT ESIM tradenomi -> brand names
-
 const inputClasses =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 transition";
 
@@ -125,7 +124,6 @@ export default function AddProfile() {
         translateText(formData.summary.fi, "EN"),
         translateText(formData.availability.fi, "EN"),
       ]);
-
       setFormData((prev) => ({
         ...prev,
         currentTitle: { ...prev.currentTitle, en: titleEn },
@@ -134,7 +132,26 @@ export default function AddProfile() {
         availability: { ...prev.availability, en: availEn },
       }));
     } catch (err) {
-      console.error("Käännös epäonnistui:", err);
+      console.error("Translation failed:", err);
+      setFormData((prev) => ({
+        ...prev,
+        currentTitle: {
+          ...prev.currentTitle,
+          en: "Error while translating, please fill manually",
+        },
+        education: {
+          ...prev.education,
+          en: "Error while translating, please fill manually",
+        },
+        summary: {
+          ...prev.summary,
+          en: "Error while translating, please fill manually",
+        },
+        availability: {
+          ...prev.availability,
+          en: "Error while translating, please fill manually",
+        },
+      }));
     } finally {
       setTranslatingField(null);
     }
