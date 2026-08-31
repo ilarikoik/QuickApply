@@ -47,6 +47,17 @@ Full testing across multiple recruitment sites, documentation, thesis writeup.
 
 Beyond solving a real annoyance for anyone actively job hunting, this serves as a demonstration of full-stack skills: browser extension development, REST API design, authentication, and database design — and as a portfolio piece for my own transition from student to professional.
 
+## Environment variables
+
+The extension needs the following variable, defined in `extension/.env` (see `extension/.env.example`):
+
+| Variable | Description |
+|---|---|
+| `VITE_DEEPL_API_KEY` | API key for DeepL, used for translation |
+
+Register for a free key at [deepl.com/en/developers](https://www.deepl.com/en/developers) and add it to `.env`.
+
+
 ## Getting started
 
 ```bash
@@ -57,6 +68,7 @@ cd <repo-name>
 # Extension (frontend)
 cd extension
 npm install
+cp .env.example .env   # add your DeepL API key to .env
 npm run dev
 
 # Backend
@@ -66,7 +78,3 @@ docker compose up -d      # starts PostgreSQL
 ```
 
 Then load the `extension/dist` folder as an unpacked extension in Chrome (`chrome://extensions` → Developer mode → Load unpacked).
-
-## License
-
-TBD
