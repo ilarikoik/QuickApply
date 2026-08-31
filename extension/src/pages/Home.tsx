@@ -1,5 +1,7 @@
+import testData from "../testData.json";
+
 export default function Home() {
-  const profileLength: number = 0;
+  const profileLength: number = 1;
 
   if (profileLength === 0) {
     return (
@@ -14,7 +16,7 @@ export default function Home() {
   return (
     <div className="flex font-mono bg-background text-text">
       <h1 className="flex w-full justify-center text-lg font-bold">
-        Current profile: ----
+        Current profile: -{testData.firstName}
       </h1>
     </div>
   );

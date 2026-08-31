@@ -1,0 +1,34 @@
+{
+  "firstName": "IIIIIIIIIIIIIIIIIIRO",
+  "lastName": "KOOOOOOOKE",
+  "email": "ilari.koikkalainen@example.com",
+  "phone": "+358 40 1234567",
+  "dateOfBirth": "1999-05-14",
+  "address": "Mannerheimintie 12 A 3",
+  "city": "Helsinki",
+  "postalCode": "00100",
+  "country": "Finland",
+  "currentTitle": {
+    "fi": "Ohjelmoinnin opiskelija",
+    "en": "Software Engineering Student"
+  },
+  "yearsOfExperience": "2",
+  "education": {
+    "fi": "Tietojenkäsittelyn tradenomi (kesken), 3. vuosikurssi",
+    "en": "BBA in Business Information Technology (in progress), 3rd year"
+  },
+  "school": "Metropolia Ammattikorkeakoulu",
+  "linkedin": "https://www.linkedin.com/in/ilari-koikkalainen",
+  "github": "https://github.com/ilarikoikkalainen",
+  "portfolio": "https://ilarikoikkalainen.dev",
+  "summary": {
+    "fi": "Full-stack-osaava ohjelmointiopiskelija, jolla on käytännön kokemusta React/TypeScript-frontendeistä ja Spring Boot -backendeistä. Kiinnostunut selainlaajennuksista ja API-integraatioista.",
+    "en": "Full-stack software student with hands-on experience in React/TypeScript frontends and Spring Boot backends. Interested in browser extensions and API integrations."
+  },
+  "salaryExpectation": "3200",
+  "availability": {
+    "fi": "1 kuukauden irtisanomisaika",
+    "en": "1 month notice period"
+  },
+  "willingToRelocate": false
+}

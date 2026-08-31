@@ -25,7 +25,6 @@ interface ProfileFormData {
   github: string;
   portfolio: string;
 
-  // englanniksi myös
   currentTitle: LocalizedText;
   education: LocalizedText;
   summary: LocalizedText;
