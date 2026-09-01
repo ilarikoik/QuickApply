@@ -24,6 +24,7 @@ interface ProfileFormData {
   linkedin: string;
   github: string;
   portfolio: string;
+  reference: string;
 
   currentTitle: LocalizedText;
   education: LocalizedText;
@@ -48,6 +49,7 @@ const initialFormData: ProfileFormData = {
   linkedin: "",
   github: "",
   portfolio: "",
+  reference: "",
   summary: { fi: "", en: "" },
   salaryExpectation: "",
   availability: { fi: "", en: "" },
@@ -329,6 +331,15 @@ export default function AddProfile() {
                   placeholder="Haaga-Helia"
                   value={formData.school}
                   onChange={(e) => handleChange("school", e.target.value)}
+                />
+              </Field>
+              <Field label="Suosittelija">
+                <input
+                  type="text"
+                  className={inputClasses}
+                  placeholder="Esim. Matti Meikäläinen, Päivi Virtanen"
+                  value={formData.reference}
+                  onChange={(e) => handleChange("reference", e.target.value)}
                 />
               </Field>
             </div>

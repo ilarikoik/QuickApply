@@ -1,6 +1,7 @@
 {
   "firstName": "IIIIIIIIIIIIIIIIIIRO",
   "lastName": "KOOOOOOOKE",
+  "fullName": "IIIIIIIIIIIIIIIIIIRO KOOOOOOOKE",
   "email": "ilari.koikkalainen@example.com",
   "phone": "+358 40 1234567",
   "dateOfBirth": "1999-05-14",
@@ -18,6 +19,7 @@
     "en": "BBA in Business Information Technology (in progress), 3rd year"
   },
   "school": "Metropolia Ammattikorkeakoulu",
+  "reference": "Matti Meikäläinen, Päivi Virtanen",
   "linkedin": "https://www.linkedin.com/in/ilari-koikkalainen",
   "github": "https://github.com/ilarikoikkalainen",
   "portfolio": "https://ilarikoikkalainen.dev",

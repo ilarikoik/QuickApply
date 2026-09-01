@@ -6,6 +6,7 @@ import testData from "../testData.json";
 type FieldType =
   | "firstName"
   | "lastName"
+  | "fullName"
   | "email"
   | "phone"
   | "dateOfBirth"
@@ -17,6 +18,7 @@ type FieldType =
   | "yearsOfExperience"
   | "education"
   | "school"
+  | "reference"
   | "linkedin"
   | "github"
   | "portfolio"
@@ -27,7 +29,7 @@ type FieldType =
   | "willingToRelocate"
   | "unknown";
 
-// kentät joiden arvo profiilissa on { fi, en } eikä pelkkä string
+//{ fi, en } eikä pelkkä string
 const LOCALIZED_FIELDS: FieldType[] = [
   "currentTitle",
   "education",
@@ -47,10 +49,11 @@ interface DetectedField {
   signals: string[]; // debug: mistä matchi tuli
 }
 
-// ---------- 1. Regex-patternit per kenttätyyppi ----------
+// regex
 const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
-  firstName: /first.?name|given.?name|etunimi/i,
+  firstName: /first.?name|given.?name|etunimi|preferred name/i,
   lastName: /last.?name|surname|family.?name|sukunimi/i,
+  fullName: /full.?name|kokonimi/i,
   email: /e-?mail|sähköposti/i,
   phone: /phone|mobile|tel(?!t)|puhelin/i,
   dateOfBirth: /date.?of.?birth|birth.?date|syntymäaika/i,
@@ -69,14 +72,16 @@ const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   coverLetter: /cover.?letter|motivation|saatekirje/i,
   salaryExpectation: /salary|compensation|palkkatoive/i,
   availability:
-    /availability|start.?date|notice.?period|saatavuus|aloitusajankohta/i,
-  willingToRelocate: /relocat|muuttohalukkuus/i,
+    /availability|start.?date|notice.?period|saatavuus|aloitusajankohta|milloin voit aloittaa/i,
+  willingToRelocate: /relocat|muuttohalukkuus|valmis muuuttamaan/i,
+  reference: /reference|suosittelija/i,
 };
 
 // autocomplete-arvot ovat luotettavin signaali -> painotetaan korkeammalle
 const AUTOCOMPLETE_MAP: Record<string, FieldType> = {
   "given-name": "firstName",
   "family-name": "lastName",
+  name: "fullName",
   email: "email",
   tel: "phone",
   bday: "dateOfBirth",
@@ -87,7 +92,7 @@ const AUTOCOMPLETE_MAP: Record<string, FieldType> = {
   "country-name": "country",
 };
 
-// ---------- 2. Yhden kentän analyysi ----------
+// yksittäisen kentän analyysi
 function collectSignals(
   el: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement,
 ): { text: string; source: string }[] {
@@ -212,9 +217,7 @@ function classifyField(
   };
 }
 
-// ---------- 3. Kaikkien kenttien läpikäynti ----------
 const CONFIDENCE_THRESHOLD = 0.6;
-
 function scanForm(): { toFill: DetectedField[]; uncertain: DetectedField[] } {
   const rawFields = Array.from(
     document.querySelectorAll<
@@ -237,7 +240,8 @@ function scanForm(): { toFill: DetectedField[]; uncertain: DetectedField[] } {
   };
 }
 
-// ---------- 4. Arvon asetus React-yhteensopivasti ----------
+// arvon asetus React-yhteensopivasti
+
 function setNativeValue(
   el: HTMLInputElement | HTMLTextAreaElement,
   value: string,
@@ -247,12 +251,20 @@ function setNativeValue(
       ? window.HTMLTextAreaElement.prototype
       : window.HTMLInputElement.prototype;
   const setter = Object.getOwnPropertyDescriptor(proto, "value")?.set;
+  // simuloidaan koko käyttäjän interaktio
+  // monet lomakekirjastot (Formik, react-hook-form) merkitsevät kentän
+  // "kosketetuksi" (touched) vasta focus+blur-syklin perusteella,
+  // eivätkä aja validointia pelkän input/change-eventin varassa --> FocusEvent + input/change + BlurEvent
+  el.dispatchEvent(new FocusEvent("focus", { bubbles: true }));
+  el.dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+
   setter?.call(el, value);
   el.dispatchEvent(new Event("input", { bubbles: true }));
   el.dispatchEvent(new Event("change", { bubbles: true }));
-}
 
-// ---------- 5. Täyttö ----------
+  el.dispatchEvent(new FocusEvent("blur", { bubbles: true }));
+  el.dispatchEvent(new FocusEvent("focusout", { bubbles: true }));
+}
 
 // tunnistaa sivun kielen: ensisijaisesti <html lang="">, fallback body-tekstin perusteella
 function detectPageLanguage(): "fi" | "en" {
@@ -292,7 +304,7 @@ function fillFields(
   for (const field of fields) {
     if (field.type === "unknown") continue;
 
-    // file-inputin arvoa ei voi (eikä saa turvallisuussyistä) asettaa JS:llä
+    /// skipataan FILE input - tietoturva
     if (
       field.element instanceof HTMLInputElement &&
       field.element.type === "file"
@@ -329,7 +341,6 @@ function watchForFormChanges(onChange: () => void) {
   return observer;
 }
 
-// ---------- 7. Käynnistys ----------
 function run() {
   const { toFill, uncertain } = scanForm();
 
@@ -341,18 +352,17 @@ function run() {
     toFill.map((f) => ({ type: f.type, confidence: f.confidence })),
   );
 
-  // TODO: korvaa testData oikealla profiililla chrome.storage.local / backendistä
+  // hae oikea data
   fillFields(toFill, testData);
 
   if (uncertain.length > 0) {
-    // TODO: lähetä popupille (chrome.runtime.sendMessage) epävarmojen kenttien lista
+    // popupille epävarmojen kenttien lista (chrome.runtime.sendMessage)
     console.log(
       "Epävarmat kentät:",
       uncertain.map((f) => ({ signals: f.signals, confidence: f.confidence })),
     );
   }
 }
-
 console.log("[content-script] ladattu, sivu:", location.href);
 watchForFormChanges(() => run());
 run();
