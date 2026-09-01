@@ -11,6 +11,7 @@ type FieldType =
   | "phone"
   | "dateOfBirth"
   | "address"
+  | "location"
   | "city"
   | "postalCode"
   | "country"
@@ -29,6 +30,7 @@ type FieldType =
   | "availability"
   | "willingToRelocate"
   | "unknown";
+// technologies - Which technologies have you worked with?
 
 //{ fi, en } eikä pelkkä string
 const LOCALIZED_FIELDS: FieldType[] = [
@@ -60,6 +62,7 @@ const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   dateOfBirth: /date.?of.?birth|birth.?date|syntymäaika/i,
   address: /^address|street.?address|katuosoite|osoite/i,
   city: /city|town|paikkakunta|kaupunki/i,
+  location: /location|where are you based|sijainti|asuinpaikka/i,
   postalCode: /postal.?code|zip.?code|postinumero/i,
   country: /country|maa(?!il)/i,
   currentTitle: /current.?title|job.?title|nykyinen.?tehtävä|ammattinimike/i,
@@ -285,6 +288,12 @@ function resolveValue(
   profile: Record<string, string | LocalizedValue | boolean>,
   lang: "fi" | "en",
 ): string | undefined {
+  if (type === "location") {
+    const city = profile["city"] as string | undefined;
+    const country = profile["country"] as string | undefined;
+    if (city && country) return `${city}, ${country}`;
+    return city || country;
+  }
   const raw = profile[type];
   if (raw === undefined) return undefined;
 
