@@ -18,6 +18,7 @@ type FieldType =
   | "yearsOfExperience"
   | "education"
   | "school"
+  | "graduationYear"
   | "reference"
   | "linkedin"
   | "github"
@@ -65,6 +66,7 @@ const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   yearsOfExperience: /years?.?of.?experience|work.?experience|työkokemus/i,
   education: /education|degree|koulutus|tutkinto/i,
   school: /school|university|college|oppilaitos|koulu|yliopisto/i,
+  graduationYear: /graduation.?year|valmistumisvuosi/i,
   linkedin: /linkedin/i,
   github: /github/i,
   portfolio: /portfolio/i,

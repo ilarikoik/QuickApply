@@ -15,10 +15,11 @@
   },
   "yearsOfExperience": "2",
   "education": {
-    "fi": "Tietojenkäsittelyn tradenomi (kesken), 3. vuosikurssi",
-    "en": "BBA in Business Information Technology (in progress), 3rd year"
+    "fi": "Tietojenkäsittelyn tradenomi ",
+    "en": "BBA in Business Information Technology "
   },
   "school": "Metropolia Ammattikorkeakoulu",
+  "graduationYear": "2026",
   "reference": "Matti Meikäläinen, Päivi Virtanen",
   "linkedin": "https://www.linkedin.com/in/ilari-koikkalainen",
   "github": "https://github.com/ilarikoikkalainen",

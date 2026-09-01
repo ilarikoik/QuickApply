@@ -21,6 +21,7 @@ interface ProfileFormData {
   willingToRelocate: boolean;
   yearsOfExperience: string;
   school: string;
+  graduationYear: string;
   linkedin: string;
   github: string;
   portfolio: string;
@@ -46,6 +47,7 @@ const initialFormData: ProfileFormData = {
   yearsOfExperience: "",
   education: { fi: "", en: "" },
   school: "",
+  graduationYear: "",
   linkedin: "",
   github: "",
   portfolio: "",
@@ -331,6 +333,17 @@ export default function AddProfile() {
                   placeholder="Haaga-Helia"
                   value={formData.school}
                   onChange={(e) => handleChange("school", e.target.value)}
+                />
+              </Field>
+              <Field label="Valmistumisvuosi">
+                <input
+                  type="text"
+                  className={inputClasses}
+                  placeholder="2023"
+                  value={formData.graduationYear}
+                  onChange={(e) =>
+                    handleChange("graduationYear", e.target.value)
+                  }
                 />
               </Field>
               <Field label="Suosittelija">
