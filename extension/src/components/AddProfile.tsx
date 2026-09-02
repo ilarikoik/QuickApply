@@ -1,39 +1,11 @@
 import { useState } from "react";
 import { translateText } from "../lib/translate";
 
-interface LocalizedText {
-  fi: string;
-  en: string;
-}
-
-interface ProfileFormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  dateOfBirth: string;
-
-  address: string;
-  city: string;
-  postalCode: string;
-  country: string;
-  salaryExpectation: string;
-  willingToRelocate: boolean;
-  yearsOfExperience: string;
-  school: string;
-  graduationYear: string;
-  linkedin: string;
-  github: string;
-  portfolio: string;
-  reference: string;
-
-  currentTitle: LocalizedText;
-  education: LocalizedText;
-  summary: LocalizedText;
-  availability: LocalizedText;
-}
+import type { ProfileFormData } from "../interface/ProfileInterface";
 
 const initialFormData: ProfileFormData = {
+  id: 0,
+  profileName: "",
   firstName: "",
   lastName: "",
   email: "",
@@ -66,6 +38,21 @@ const steps = [
   { number: 5, label: "Tarkista käännökset" },
 ];
 
+// children antaa sinun päättää mitä sisältöä laitetaan siihen kohtaan jonka komponentti on itse merkinnyt {children}
+// vain jos parent komponentti toimii wrapprina
+// eli jos parentin sisältö vaihtelee (input, select, textarea, Card,TextBox jne)
+// jos parent komponentti tarvii joustavuutta sen sisällön suhteen, se voi käyttää children, sillon parent komponentti voi renderöidä mitä tahansa sisältöä, joka sen sisälle annetaan
+// yt-  React - Nested Components Tutorial (Childen props)
+{
+  /*esim
+  ..CardSection({children})..
+<CardSection>
+  <Card/>
+  <Button/>
+  <TextBox/>
+</CardSection> 
+*/
+}
 function Field({
   label,
   children,
@@ -87,6 +74,8 @@ function Field({
 const inputClasses =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 transition";
 
+// muutetaan vastaanottaa propsina profiilin tiedot
+// et saadaan muokkaus myös
 export default function AddProfile() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<ProfileFormData>(initialFormData);

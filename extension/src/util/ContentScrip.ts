@@ -1,6 +1,7 @@
 // content-script.ts
 // Ajetaan jokaisella rekrytointisivustolla (manifest.json: content_scripts)
 
+import type { Profile, ProfileFormData } from "../interface/ProfileInterface";
 import testData from "../testData.json";
 
 type FieldType =
@@ -16,6 +17,7 @@ type FieldType =
   | "postalCode"
   | "country"
   | "currentTitle"
+  // | "technologies"
   | "yearsOfExperience"
   | "education"
   | "school"
@@ -31,6 +33,7 @@ type FieldType =
   | "willingToRelocate"
   | "unknown";
 // technologies - Which technologies have you worked with?
+// muista muokata testDataa oikein
 
 //{ fi, en } eikä pelkkä string
 const LOCALIZED_FIELDS: FieldType[] = [
@@ -60,6 +63,7 @@ const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   email: /e-?mail|sähköposti/i,
   phone: /phone|mobile|tel(?!t)|puhelin/i,
   dateOfBirth: /date.?of.?birth|birth.?date|syntymäaika/i,
+  // technologies: /technologies|skills|osaaminen|taitot/i,
   address: /^address|street.?address|katuosoite|osoite/i,
   city: /city|town|paikkakunta|kaupunki/i,
   location: /location|where are you based|sijainti|asuinpaikka/i,
@@ -96,6 +100,11 @@ const AUTOCOMPLETE_MAP: Record<string, FieldType> = {
   country: "country",
   "country-name": "country",
 };
+
+function getActiveProfile(): ProfileFormData | undefined {
+  const profiles: ProfileFormData[] = testData;
+  return profiles.length > 0 ? profiles[1] : undefined;
+}
 
 // yksittäisen kentän analyysi
 function collectSignals(
@@ -285,7 +294,7 @@ function detectPageLanguage(): "fi" | "en" {
 
 function resolveValue(
   type: FieldType,
-  profile: Record<string, string | LocalizedValue | boolean>,
+  profile: Profile,
   lang: "fi" | "en",
 ): string | undefined {
   if (type === "location") {
@@ -302,13 +311,13 @@ function resolveValue(
     return localized[lang] || localized.en || localized.fi;
   }
 
-  if (typeof raw === "boolean") return undefined; // esim. willingToRelocate -> ei tekstikenttä
+  if (typeof raw === "boolean") return undefined;
   return raw as string;
 }
 
 function fillFields(
   fields: DetectedField[],
-  profile: Record<string, string | LocalizedValue | boolean>,
+  profile: Record<string, string | number | LocalizedValue | boolean>,
 ) {
   const lang = detectPageLanguage();
 
@@ -332,8 +341,6 @@ function fillFields(
       ) {
         setNativeValue(field.element, value);
       }
-      // HTMLSelectElement: erillinen logiikka (option-matchaus arvolle) tarvitaan tähän myöhemmin
-      // willingToRelocate (checkbox/radio): erillinen logiikka tarvitaan tähän myöhemmin
     } catch (err) {
       // yksittäisen kentän virhe ei saa pysäyttää koko täyttöä
       console.warn(
@@ -345,7 +352,6 @@ function fillFields(
   }
 }
 
-// ---------- 6. Dynaamiset lomakkeet (esim. Workday, Greenhouse) ----------
 function watchForFormChanges(onChange: () => void) {
   const observer = new MutationObserver(() => onChange());
   observer.observe(document.body, { childList: true, subtree: true });
@@ -364,7 +370,12 @@ function run() {
   );
 
   // hae oikea data
-  fillFields(toFill, testData);
+  const profile = getActiveProfile();
+  if (!profile) {
+    console.warn("[content-script] profiilia ei löytynyt testidatasta");
+    return;
+  }
+  fillFields(toFill, profile);
 
   if (uncertain.length > 0) {
     // popupille epävarmojen kenttien lista (chrome.runtime.sendMessage)

@@ -1,37 +1,80 @@
-{
-  "firstName": "IIIIIIIIIIIIIIIIIIRO",
-  "lastName": "KOOOOOOOKE",
-  "fullName": "IIIIIIIIIIIIIIIIIIRO KOOOOOOOKE",
-  "email": "ilari.koikkalainen@example.com",
-  "phone": "+358 40 1234567",
-  "dateOfBirth": "1999-05-14",
-  "address": "Mannerheimintie 12 A 3",
-  "city": "Helsinki",
-  "postalCode": "00100",
-  "country": "Finland",
-  "currentTitle": {
-    "fi": "Ohjelmoinnin opiskelija",
-    "en": "Software Engineering Student"
+[
+  {
+    "id": 1,
+    "profileName": "frontend",
+    "firstName": "Ilari",
+    "lastName": "Koikkalainen",
+    "fullName": "Ilari Koikkalainen",
+    "email": "ilari.koikkalainen@example.com",
+    "phone": "+358 40 1234567",
+    "dateOfBirth": "1999-05-14",
+    "address": "Helsinki",
+    "city": "Helsinki",
+    "postalCode": "00100",
+    "country": "Finland",
+    "currentTitle": {
+      "fi": "Ohjelmistokehityksen opiskelija",
+      "en": "Software Development Student"
+    },
+    "yearsOfExperience": "1",
+    "education": {
+      "fi": "Tietojenkäsittelyn tradenomi",
+      "en": "BBA in Business Information Technology"
+    },
+    "school": "Haaga-Helia ammattikorkeakoulu",
+    "graduationYear": "2026",
+    "reference": "",
+    "linkedin": "https://www.linkedin.com/in/ilari-koikkalainen",
+    "github": "https://github.com/ilarikoikkalainen",
+    "portfolio": "https://ilarikoikkalainen.dev",
+    "summary": {
+      "fi": "Ohjelmistokehityksen opiskelija, jolla on käytännön kokemusta Reactista, TypeScriptistä ja modernista web-kehityksestä. Kiinnostunut erityisesti frontend-kehityksestä, selainlaajennuksista ja API-integraatioista.",
+      "en": "Software development student with hands-on experience in React, TypeScript and modern web development. Particularly interested in frontend development, browser extensions and API integrations."
+    },
+    "salaryExpectation": "2400",
+    "availability": {
+      "fi": "Sopimuksen mukaan",
+      "en": "Negotiable"
+    },
+    "willingToRelocate": false
   },
-  "yearsOfExperience": "2",
-  "education": {
-    "fi": "Tietojenkäsittelyn tradenomi ",
-    "en": "BBA in Business Information Technology "
-  },
-  "school": "Metropolia Ammattikorkeakoulu",
-  "graduationYear": "2026",
-  "reference": "Matti Meikäläinen, Päivi Virtanen",
-  "linkedin": "https://www.linkedin.com/in/ilari-koikkalainen",
-  "github": "https://github.com/ilarikoikkalainen",
-  "portfolio": "https://ilarikoikkalainen.dev",
-  "summary": {
-    "fi": "Full-stack-osaava ohjelmointiopiskelija, jolla on käytännön kokemusta React/TypeScript-frontendeistä ja Spring Boot -backendeistä. Kiinnostunut selainlaajennuksista ja API-integraatioista.",
-    "en": "Full-stack software student with hands-on experience in React/TypeScript frontends and Spring Boot backends. Interested in browser extensions and API integrations."
-  },
-  "salaryExpectation": "3200",
-  "availability": {
-    "fi": "1 kuukauden irtisanomisaika",
-    "en": "1 month notice period"
-  },
-  "willingToRelocate": false
-}
+  {
+    "id": 2,
+    "profileName": "fullstack",
+    "firstName": "Ilari",
+    "lastName": "Koikkalainen",
+    "fullName": "Ilari Koikkalainen",
+    "email": "ilari.koikkalainen@example.com",
+    "phone": "+358 40 1234567",
+    "dateOfBirth": "1999-05-14",
+    "address": "Helsinki",
+    "city": "Helsinki",
+    "postalCode": "00100",
+    "country": "Finland",
+    "currentTitle": {
+      "fi": "Ohjelmistokehityksen opiskelija",
+      "en": "Software Development Student"
+    },
+    "yearsOfExperience": "1",
+    "education": {
+      "fi": "Tietojenkäsittelyn tradenomi",
+      "en": "BBA in Business Information Technology"
+    },
+    "school": "Haaga-Helia ammattikorkeakoulu",
+    "graduationYear": "2026",
+    "reference": "",
+    "linkedin": "https://www.linkedin.com/in/ilari-koikkalainen",
+    "github": "https://github.com/ilarikoikkalainen",
+    "portfolio": "https://ilarikoikkalainen.dev",
+    "summary": {
+      "fi": "Ohjelmistokehityksen opiskelija, jolla on full-stack-osaamista React/TypeScript-frontendeistä ja Java/Spring Boot -backendeistä. Kokemusta REST API -rajapinnoista, PostgreSQL-tietokannoista, autentikoinnista ja selainlaajennuksista.",
+      "en": "Software development student with full-stack experience in React/TypeScript frontends and Java/Spring Boot backends. Experienced with REST APIs, PostgreSQL databases, authentication and browser extensions."
+    },
+    "salaryExpectation": "2400",
+    "availability": {
+      "fi": "Sopimuksen mukaan",
+      "en": "Negotiable"
+    },
+    "willingToRelocate": false
+  }
+]

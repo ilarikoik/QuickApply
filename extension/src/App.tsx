@@ -13,7 +13,7 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-100 bg-background text-text">
+      <div className="min-h-screen bg-background text-text">
         <NavBar />
         <Home />
       </div>
