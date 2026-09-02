@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { translateText } from "../lib/translate";
 
 import type { ProfileFormData } from "../interface/ProfileInterface";
@@ -76,10 +76,21 @@ const inputClasses =
 
 // muutetaan vastaanottaa propsina profiilin tiedot
 // et saadaan muokkaus myös
-export default function AddProfile() {
+interface AddProfileProps {
+  profile?: ProfileFormData;
+  onBack: () => void;
+}
+
+export default function AddProfile({ profile, onBack }: AddProfileProps) {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<ProfileFormData>(initialFormData);
   const [translatingField, setTranslatingField] = useState<string | null>(null);
+  const [formData, setFormData] = useState<ProfileFormData>(
+    profile ?? initialFormData,
+  );
+
+  useEffect(() => {
+    setFormData(profile ?? initialFormData);
+  }, [profile]);
 
   const goNext = () => setStep((s) => Math.min(s + 1, steps.length));
   const goPrev = () => setStep((s) => Math.max(s - 1, 1));
@@ -151,6 +162,13 @@ export default function AddProfile() {
 
   return (
     <div className="mx-auto w-full max-w-md rounded-xl bg-white p-6 shadow-md">
+      <button
+        type="button"
+        onClick={onBack}
+        className="mb-4 text-sm text-slate-500 hover:text-slate-900"
+      >
+        ← Takaisin
+      </button>
       <h1 className="mb-1 text-xl font-semibold text-slate-900">
         Täytä profiilitiedot
       </h1>
