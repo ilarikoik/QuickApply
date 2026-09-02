@@ -7,6 +7,7 @@ import type { ProfileFormData } from "../interface/ProfileInterface";
 export default function Home() {
   const [profiles, setProfiles] = useState<ProfileFormData[]>(testData);
   const [selectedProfileId, setSelectedProfileId] = useState<number>(1);
+
   const [isEditing, setIsEditing] = useState(false);
 
   const selectedProfile = profiles.find(
@@ -32,7 +33,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen justify-center bg-background text-text font-mono p-8">
+    <div className="flex min-h-screen min-w-lg justify-center bg-background text-text font-mono p-8">
       {!isEditing ? (
         <section className="flex h-fit flex-col items-center gap-4 rounded-lg border border-text p-8">
           <h3 className="text-sm font-normal text-gray-500">

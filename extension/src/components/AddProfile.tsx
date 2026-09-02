@@ -161,7 +161,7 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-xl bg-white p-6 shadow-md">
+    <div className="mx-auto w-full min-w-3/6 max-w-lg rounded-xl bg-white p-6 shadow-md">
       <button
         type="button"
         onClick={onBack}
@@ -397,7 +397,7 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
           <>
             <Field label="Lyhyt esittely">
               <textarea
-                className={`${inputClasses} min-h-[100px] resize-none`}
+                className={`${inputClasses} min-h-25  resize-y`}
                 placeholder="Kerro lyhyesti itsestäsi ja osaamisestasi..."
                 value={formData.summary.fi}
                 onChange={(e) =>
@@ -484,7 +484,7 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
 
             <Field label="Summary">
               <textarea
-                className={`${inputClasses} min-h-[100px] resize-none`}
+                className={`${inputClasses} min-h-25 resize-y`}
                 placeholder="Tell briefly about yourself and your skills..."
                 value={formData.summary.en}
                 onChange={(e) =>
