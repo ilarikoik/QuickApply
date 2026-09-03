@@ -5,12 +5,12 @@
     "firstName": "Ilari",
     "lastName": "Koikkalainen",
     "fullName": "Ilari Koikkalainen",
-    "email": "ilari.koikkalainen@example.com",
-    "phone": "+358 40 1234567",
-    "dateOfBirth": "1999-05-14",
-    "address": "Helsinki",
+    "email": "ilari.koik@gmail.com",
+    "phone": "+358 40 5281697",
+    "dateOfBirth": "1997-05-01",
+    "address": "Sinebrychoffinkatu",
     "city": "Helsinki",
-    "postalCode": "00100",
+    "postalCode": "00120",
     "country": "Finland",
     "currentTitle": {
       "fi": "Ohjelmistokehityksen opiskelija",
@@ -24,14 +24,18 @@
     "school": "Haaga-Helia ammattikorkeakoulu",
     "graduationYear": "2026",
     "reference": "",
-    "linkedin": "https://www.linkedin.com/in/ilari-koikkalainen",
-    "github": "https://github.com/ilarikoikkalainen",
-    "portfolio": "https://ilarikoikkalainen.dev",
+    "linkedin": "ei ole",
+    "github": "https://github.com/ilarikoi",
+    "portfolio": "https://cv-two-gamma-34.vercel.app/",
     "summary": {
       "fi": "Ohjelmistokehityksen opiskelija, jolla on käytännön kokemusta Reactista, TypeScriptistä ja modernista web-kehityksestä. Kiinnostunut erityisesti frontend-kehityksestä, selainlaajennuksista ja API-integraatioista.",
       "en": "Software development student with hands-on experience in React, TypeScript and modern web development. Particularly interested in frontend development, browser extensions and API integrations."
     },
-    "salaryExpectation": "2400",
+    "coverLetter": {
+      "fi": "Olen ohjelmistokehityksen opiskelija, jolla on käytännön kokemusta Reactista, TypeScriptistä ja modernista web-kehityksestä. Olen erityisen kiinnostunut frontend-kehityksestä ja käyttöliittymäsuunnittelusta, ja haluan päästä soveltamaan osaamistani oikeissa projekteissa yhdessä kokeneemman tiimin kanssa. Opin nopeasti uutta ja otan mielelläni vastaan palautetta kehittyäkseni edelleen.",
+      "en": "I'm a software development student with hands-on experience in React, TypeScript and modern web development. I'm particularly interested in frontend development and UI design, and I'm looking to apply my skills on real projects alongside a more experienced team. I pick up new things quickly and welcome feedback to keep improving."
+    },
+    "salaryExpectation": "2600",
     "availability": {
       "fi": "Sopimuksen mukaan",
       "en": "Negotiable"
@@ -70,7 +74,54 @@
       "fi": "Ohjelmistokehityksen opiskelija, jolla on full-stack-osaamista React/TypeScript-frontendeistä ja Java/Spring Boot -backendeistä. Kokemusta REST API -rajapinnoista, PostgreSQL-tietokannoista, autentikoinnista ja selainlaajennuksista.",
       "en": "Software development student with full-stack experience in React/TypeScript frontends and Java/Spring Boot backends. Experienced with REST APIs, PostgreSQL databases, authentication and browser extensions."
     },
+    "coverLetter": {
+      "fi": "Olen ohjelmistokehityksen opiskelija, jolla on full-stack-osaamista sekä React/TypeScript-frontendeistä että Java/Spring Boot -backendeistä. Olen työskennellyt REST-rajapintojen, PostgreSQL-tietokantojen ja autentikoinnin parissa käytännön projekteissa, ja haluan nyt päästä syventämään osaamistani oikeassa työympäristössä. Arvostan selkeää koodia ja hyviä käytäntöjä, ja opin mielelläni tiimin mukana.",
+      "en": "I'm a software development student with full-stack experience in both React/TypeScript frontends and Java/Spring Boot backends. I've worked with REST APIs, PostgreSQL databases and authentication in hands-on projects, and I'm looking to deepen my skills in a real work environment. I value clean code and good practices, and I'm eager to learn alongside the team."
+    },
     "salaryExpectation": "2400",
+    "availability": {
+      "fi": "Sopimuksen mukaan",
+      "en": "Negotiable"
+    },
+    "willingToRelocate": false
+  },
+  {
+    "id": 3,
+    "profileName": "yleis",
+    "firstName": "Ilari",
+    "lastName": "Koikkalainen",
+    "fullName": "Ilari Koikkalainen",
+    "email": "ilari.koik@gmail.com",
+    "phone": "+358 40 5281697",
+    "dateOfBirth": "1997-05-01",
+    "address": "Sinebrychoffinkatu",
+    "city": "Helsinki",
+    "postalCode": "00120",
+    "country": "Finland",
+    "currentTitle": {
+      "fi": "Rakennustyöntekijä / varastotyöntekijä",
+      "en": "Construction Worker / Warehouse Worker"
+    },
+    "yearsOfExperience": "6",
+    "education": {
+      "fi": "Rakennusalan perustutkinto",
+      "en": "Vocational Qualification in Construction"
+    },
+    "school": "Omnia, ammattikoulu",
+    "graduationYear": "2018",
+    "reference": "",
+    "linkedin": "ei ole",
+    "github": "",
+    "portfolio": "",
+    "summary": {
+      "fi": "Vastuullinen ja järjestelmällinen tekijä, jolla on kuuden vuoden käytännön kokemus rakennusalalta sekä varastotyöstä. Tottunut noudattamaan tarkkoja turvallisuus- ja laatuvaatimuksia, työskentelemään itsenäisesti ja pitämään pään kylmänä muuttuvissa tilanteissa. Opiskelee tietojenkäsittelyä ja ohjelmistokehitystä, minkä myötä vahva tietotekninen osaaminen ja looginen ongelmanratkaisukyky täydentävät käytännön työkokemusta.",
+      "en": "Responsible and systematic worker with six years of hands-on experience in construction and warehouse work. Accustomed to following strict safety and quality requirements, working independently, and staying calm in changing situations. Currently studying information technology and software development, complementing practical work experience with strong technical skills and logical problem-solving ability."
+    },
+    "coverLetter": {
+      "fi": "Olen vastuullinen ja järjestelmällinen tekijä, jolla on kuuden vuoden käytännön kokemus rakennusalalta sekä varastotyöstä. Olen tottunut noudattamaan tarkkoja turvallisuus- ja laatuvaatimuksia, työskentelemään itsenäisesti sekä osana työryhmää, ja pitämään pään kylmänä muuttuvissa tilanteissa. Haen tätä paikkaa, koska arvostan käytännönläheistä työtä ja haluan tuoda kokemukseni sekä luotettavuuteni osaksi tiimiänne.",
+      "en": "I'm a responsible and systematic worker with six years of hands-on experience in construction and warehouse work. I'm accustomed to following strict safety and quality requirements, working both independently and as part of a team, and staying calm under changing conditions. I'm applying for this position because I value practical work and want to bring my experience and reliability to your team."
+    },
+    "salaryExpectation": "",
     "availability": {
       "fi": "Sopimuksen mukaan",
       "en": "Negotiable"

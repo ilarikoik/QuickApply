@@ -25,6 +25,7 @@ const initialFormData: ProfileFormData = {
   portfolio: "",
   reference: "",
   summary: { fi: "", en: "" },
+  coverLetter: { fi: "", en: "" },
   salaryExpectation: "",
   availability: { fi: "", en: "" },
   willingToRelocate: false,
@@ -53,6 +54,9 @@ const steps = [
 </CardSection> 
 */
 }
+
+// vois melkeen muuttaa noi fieldit omiksi komponenteiks ja niille joku parent joka ottaa children, mutta ei nyt tarvi, koska ne on niin yksinkertaisia
+// ja ne on vain tässä komponentissa käytössä, eikä niitä tarvita muualla
 function Field({
   label,
   children,
@@ -74,8 +78,6 @@ function Field({
 const inputClasses =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 transition";
 
-// muutetaan vastaanottaa propsina profiilin tiedot
-// et saadaan muokkaus myös
 interface AddProfileProps {
   profile?: ProfileFormData;
   onBack: () => void;

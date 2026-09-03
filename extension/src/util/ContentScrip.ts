@@ -28,6 +28,7 @@ type FieldType =
   | "portfolio"
   | "summary"
   | "coverLetter"
+  | "coverLetter"
   | "salaryExpectation"
   | "availability"
   | "willingToRelocate"
@@ -41,6 +42,7 @@ const LOCALIZED_FIELDS: FieldType[] = [
   "education",
   "summary",
   "availability",
+  "coverLetter",
 ];
 
 interface LocalizedValue {
@@ -78,7 +80,7 @@ const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   github: /github/i,
   portfolio: /portfolio/i,
   summary: /summary|about.?(me|you)|profile|esittely|kuvaus/i,
-  coverLetter: /cover.?letter|motivation|saatekirje/i,
+  coverLetter: /cover.?letter|motivation|saatekirje|hakemusteksti/i,
   salaryExpectation: /salary|compensation|palkkatoive/i,
   availability:
     /availability|start.?date|notice.?period|saatavuus|aloitusajankohta|milloin voit aloittaa/i,
@@ -101,9 +103,12 @@ const AUTOCOMPLETE_MAP: Record<string, FieldType> = {
   "country-name": "country",
 };
 
-function getActiveProfile(): ProfileFormData | undefined {
-  const profiles: ProfileFormData[] = testData;
-  return profiles.length > 0 ? profiles[1] : undefined;
+async function getActiveProfile(): Promise<ProfileFormData | undefined> {
+  const profiles = testData as ProfileFormData[];
+  const result = await chrome.storage.local.get("activeProfileId");
+  const activeId = result.activeProfileId as number | undefined;
+  if (activeId === undefined) return profiles[0]; // fallback
+  return profiles.find((p) => p.id === activeId);
 }
 
 // yksittäisen kentän analyysi
@@ -358,7 +363,7 @@ function watchForFormChanges(onChange: () => void) {
   return observer;
 }
 
-function run() {
+async function run() {
   const { toFill, uncertain } = scanForm();
 
   console.log(
@@ -370,7 +375,7 @@ function run() {
   );
 
   // hae oikea data
-  const profile = getActiveProfile();
+  const profile = await getActiveProfile();
   if (!profile) {
     console.warn("[content-script] profiilia ei löytynyt testidatasta");
     return;

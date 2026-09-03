@@ -31,6 +31,7 @@ export interface ProfileFormData {
   currentTitle: LocalizedText;
   education: LocalizedText;
   summary: LocalizedText;
+  coverLetter: LocalizedText;
   availability: LocalizedText;
   [key: string]: string | number | boolean | LocalizedText;
 }

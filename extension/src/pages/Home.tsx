@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import testData from "../testData.json";
 import AddProfile from "../components/AddProfile";
@@ -6,14 +6,14 @@ import type { ProfileFormData } from "../interface/ProfileInterface";
 
 export default function Home() {
   const [profiles, setProfiles] = useState<ProfileFormData[]>(testData);
-  const [selectedProfileId, setSelectedProfileId] = useState<number>(1);
-
+  const [selectedProfileId, setSelectedProfileId] = useState<number>(
+    profiles[0].id,
+  );
   const [isEditing, setIsEditing] = useState(false);
 
   const selectedProfile = profiles.find(
     (profile) => profile.id === selectedProfileId,
   );
-
   const profileLength = profiles.length;
 
   if (profileLength === 0) {
@@ -26,10 +26,25 @@ export default function Home() {
     );
   }
 
-  const handleProfileChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedId = parseInt(event.target.value, 10);
-    setSelectedProfileId(selectedId);
+  useEffect(() => {
+    const fetchActiveProfileId = async () => {
+      const result = await chrome.storage.local.get("activeProfileId");
+      const activeId = result.activeProfileId as number | undefined;
+      if (activeId !== undefined) {
+        setSelectedProfileId(activeId);
+      }
+    };
+    fetchActiveProfileId();
+  }, []);
+
+  const handleProfileChange = (profileId: number) => {
+    console.log("TÄÄLLÄ");
+    chrome.storage.local.set({
+      activeProfileId: profileId,
+    });
+    setSelectedProfileId(profileId);
     setIsEditing(false);
+    console.log("Selected profile ID:", profileId);
   };
 
   return (
@@ -40,17 +55,18 @@ export default function Home() {
             {profileLength} profile{profileLength > 1 ? "s" : ""}
           </h3>
 
-          <select
-            className="rounded border border-gray-300 bg-background px-2 py-1 text-text"
-            value={selectedProfileId}
-            onChange={handleProfileChange}
-          >
+          <div className="rounded border border-gray-300 bg-background px-2 py-1 text-text">
             {profiles.map((profile) => (
-              <option key={profile.id} value={profile.id}>
-                {profile.profileName}
-              </option>
+              <ul key={profile.id}>
+                <li
+                  onClick={() => handleProfileChange(profile.id)}
+                  className="cursor-pointer"
+                >
+                  {profile.profileName}
+                </li>
+              </ul>
             ))}
-          </select>
+          </div>
 
           <div className="flex flex-row items-center gap-2">
             <p className="text-sm font-normal">
