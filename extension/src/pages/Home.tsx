@@ -2,40 +2,37 @@ import { useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
 import testData from "../testData.json";
 import AddProfile from "../components/AddProfile";
+import PopUpMessage from "../components/PopUpMessage";
 import type { ProfileFormData } from "../interface/ProfileInterface";
 
 export default function Home() {
-  const [profiles, setProfiles] = useState<ProfileFormData[]>(testData);
+  const profiles: ProfileFormData[] = testData;
+
   const [selectedProfileId, setSelectedProfileId] = useState<number>(
-    profiles[0].id,
+    profiles[0]?.id,
   );
+
   const [isEditing, setIsEditing] = useState(false);
-
-  const selectedProfile = profiles.find(
-    (profile) => profile.id === selectedProfileId,
-  );
-  const profileLength = profiles.length;
-
-  if (profileLength === 0) {
-    return (
-      <div className="flex font-mono bg-background text-text">
-        <h1 className="flex w-full justify-center text-lg text-center">
-          Please add a profile to continue.
-        </h1>
-      </div>
-    );
-  }
 
   useEffect(() => {
     const fetchActiveProfileId = async () => {
       const result = await chrome.storage.local.get("activeProfileId");
+
       const activeId = result.activeProfileId as number | undefined;
+
       if (activeId !== undefined) {
         setSelectedProfileId(activeId);
       }
     };
+
     fetchActiveProfileId();
   }, []);
+
+  const selectedProfile = profiles.find(
+    (profile) => profile.id === selectedProfileId,
+  );
+
+  const profileLength = profiles.length;
 
   const handleProfileChange = (profileId: number) => {
     console.log("TÄÄLLÄ");
@@ -48,8 +45,12 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen min-w-lg justify-center bg-background text-text font-mono p-8">
-      {!isEditing ? (
+    <div className="flex min-h-screen min-w-lg flex-col items-center gap-6 bg-background p-8 font-mono text-text">
+      {profileLength === 0 ? (
+        <h1 className="w-full text-center text-lg">
+          Please add a profile to continue.
+        </h1>
+      ) : !isEditing ? (
         <section className="flex h-fit flex-col items-center gap-4 rounded-lg border border-text p-8">
           <h3 className="text-sm font-normal text-gray-500">
             {profileLength} profile{profileLength > 1 ? "s" : ""}
@@ -87,6 +88,7 @@ export default function Home() {
           onBack={() => setIsEditing(false)}
         />
       )}
+      <PopUpMessage />
     </div>
   );
 }

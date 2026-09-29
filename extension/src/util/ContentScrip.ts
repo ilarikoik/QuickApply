@@ -3,6 +3,7 @@
 
 import type { Profile, ProfileFormData } from "../interface/ProfileInterface";
 import testData from "../testData.json";
+import type { Msg, UncertainDTO } from "./MessageTypes";
 
 type FieldType =
   | "firstName"
@@ -61,17 +62,20 @@ interface DetectedField {
 const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   firstName: /first.?name|given.?name|etunimi|preferred name/i,
   lastName: /last.?name|surname|family.?name|sukunimi/i,
-  fullName: /full.?name|kokonimi/i,
+  fullName: /full.?name|koko.?nimi|kokonimi/i,
   email: /e-?mail|sähköposti/i,
-  phone: /phone|mobile|tel(?!t)|puhelin/i,
+  phone: /phone|mobile|\btel\b|Puhelinnumero/i,
   dateOfBirth: /date.?of.?birth|birth.?date|syntymäaika/i,
   // technologies: /technologies|skills|osaaminen|taitot/i,
-  address: /^address|street.?address|katuosoite|osoite/i,
-  city: /city|town|paikkakunta|kaupunki/i,
-  location: /location|where are you based|sijainti|asuinpaikka/i,
-  postalCode: /postal.?code|zip.?code|postinumero/i,
+  address:
+    /\baddress\b|address.?line|street.?address|katuosoite|lähiosoite|kotiosoite|osoiterivi|\bosoite\b/i,
+  city: /\bcity\b|\btown\b|paikkakunta|kaupunki/i,
+  location:
+    /location|where are you based|sijainti|asuinpaikka|postitoimipaikka|Asuinkunta/i,
+  postalCode: /postal.?code|zip.?code|postinumero|postinro/i,
   country: /country|maa(?!il)/i,
-  currentTitle: /current.?title|job.?title|nykyinen.?tehtävä|ammattinimike/i,
+  currentTitle:
+    /current.?title|job.?title|nykyinen.?tehtävä|ammattinimike|työnimike|ammatti/i,
   yearsOfExperience: /years?.?of.?experience|work.?experience|työkokemus/i,
   education: /education|degree|koulutus|tutkinto/i,
   school: /school|university|college|oppilaitos|koulu|yliopisto/i,
@@ -79,9 +83,10 @@ const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   linkedin: /linkedin/i,
   github: /github/i,
   portfolio: /portfolio/i,
-  summary: /summary|about.?(me|you)|profile|esittely|kuvaus/i,
+  summary:
+    /summary|yhteenveto|about.?(me|you)|profile|miksi olisit sopiva työntekijä meille|esittely|kuvaus/i,
   coverLetter: /cover.?letter|motivation|saatekirje|hakemusteksti/i,
-  salaryExpectation: /salary|compensation|palkkatoive/i,
+  salaryExpectation: /salary|compensation|palkkatoive|palkkatoivomus/i,
   availability:
     /availability|start.?date|notice.?period|saatavuus|aloitusajankohta|milloin voit aloittaa/i,
   willingToRelocate: /relocat|muuttohalukkuus|valmis muuuttamaan/i,
@@ -102,6 +107,58 @@ const AUTOCOMPLETE_MAP: Record<string, FieldType> = {
   country: "country",
   "country-name": "country",
 };
+
+let uncertainMap = new Map<string, DetectedField>();
+
+function registerUncertain(fields: DetectedField[]) {
+  uncertainMap = new Map();
+  fields.forEach((f, i) => {
+    const uid = f.element.dataset.afUid ?? `af-${i}-${Date.now()}`;
+    f.element.dataset.afUid = uid;
+    uncertainMap.set(uid, f);
+  });
+  chrome.runtime.sendMessage({
+    type: "UNCERTAIN_COUNT",
+    count: uncertainMap.size,
+  } satisfies Msg);
+}
+
+chrome.runtime.onMessage.addListener((msg: Msg, _sender, sendResponse) => {
+  if (msg.type === "GET_UNCERTAIN") {
+    const list: UncertainDTO[] = [...uncertainMap].map(([uid, f]) => ({
+      uid,
+      guess: f.type,
+      confidence: f.confidence,
+      label:
+        collectSignals(f.element)[0]?.text.trim().slice(0, 60) ||
+        f.element.name ||
+        "(ei nimeä)",
+    }));
+    sendResponse(list);
+    return; // sync response
+  }
+
+  if (msg.type === "HIGHLIGHT_FIELD") {
+    const el = uncertainMap.get(msg.uid)?.element;
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    el?.focus();
+    if (el) el.style.outline = "2px solid orange";
+  }
+
+  if (msg.type === "FILL_FIELD") {
+    const f = uncertainMap.get(msg.uid);
+    if (f) {
+      f.type = msg.fieldType as FieldType;
+      getActiveProfile().then((p) => p && fillFields([f], p));
+      f.element.style.outline = "";
+      uncertainMap.delete(msg.uid);
+      chrome.runtime.sendMessage({
+        type: "UNCERTAIN_COUNT",
+        count: uncertainMap.size,
+      } satisfies Msg);
+    }
+  }
+});
 
 async function getActiveProfile(): Promise<ProfileFormData | undefined> {
   const profiles = testData as ProfileFormData[];
@@ -127,6 +184,28 @@ function collectSignals(
   const parentLabel = el.closest("label");
   if (parentLabel?.textContent)
     signals.push({ text: parentLabel.textContent, source: "parentLabel" });
+
+  // Rekrysivut voivat näyttää otsikon <span class="label">-elementissä
+  // kentän wrapperin sisällä ilman label[for]-sidosta. Etsi lähin edeltävä
+  // otsikko enintään neljän wrapper-tason sisältä.
+  let wrapper: Element | null = el.parentElement;
+  for (let depth = 0; wrapper && depth < 4; depth++) {
+    const precedingLabels = Array.from(
+      wrapper.querySelectorAll(".label, label, span"),
+    ).filter(
+      (candidate) =>
+        Boolean(
+          candidate.compareDocumentPosition(el) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+        ) && Boolean(candidate.textContent?.trim()),
+    );
+    const adjacentLabel = precedingLabels.at(-1);
+    if (adjacentLabel?.textContent?.trim()) {
+      signals.push({ text: adjacentLabel.textContent, source: "adjacentText" });
+      break;
+    }
+    wrapper = wrapper.parentElement;
+  }
 
   // fallback: vanhanmalliset taulukkopohjaiset lomakkeet, joissa teksti on
   // pelkkänä tekstinä samassa <td>:ssä tai edellisessä sisarsolussa, ilman <label>-elementtiä
@@ -210,16 +289,20 @@ function classifyField(
     RegExp,
   ][]) {
     if (pattern.test(combined)) {
-      // painota sen mukaan mistä signaali tuli (label/taulukkosolu > name/id > placeholder)
-      const hasLabelMatch = signals.some(
+      // Näkyvä label, placeholder ja aria-label ovat vahvoja kenttäsignaaleja.
+      // name/id jäävät heikommiksi, koska niissä voi olla satunnaisia osumia.
+      const hasDirectMatch = signals.some(
         (s) =>
           (s.source === "label" ||
             s.source === "parentLabel" ||
             s.source === "tableCell" ||
-            s.source === "tableCellSibling") &&
+            s.source === "tableCellSibling" ||
+            s.source === "adjacentText" ||
+            s.source === "placeholder" ||
+            s.source === "aria-label") &&
           pattern.test(s.text),
       );
-      const score = hasLabelMatch ? 0.75 : 0.55;
+      const score = hasDirectMatch ? 0.75 : 0.55;
       if (score > bestScore) {
         bestScore = score;
         bestType = type;
@@ -243,7 +326,15 @@ function scanForm(): { toFill: DetectedField[]; uncertain: DetectedField[] } {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >("input, textarea, select"),
   ).filter((el) => {
+    // Jobbsivustojen sijaintihaku (ei hakijan profiilikenttä); täyttö avaa
+    // ehdotuslistan, jonka DOM-muutokset käynnistäisivät skannauksen uudelleen.
+    if (el.closest(".geosuggest")) return false;
     if (el instanceof HTMLInputElement && el.type === "hidden") return false;
+    if (
+      el instanceof HTMLInputElement &&
+      (el.readOnly || el.classList.contains("hasDatepicker"))
+    )
+      return false;
     if (el.disabled) return false;
     const style = getComputedStyle(el);
     return style.display !== "none" && style.visibility !== "hidden";
@@ -358,10 +449,34 @@ function fillFields(
 }
 
 function watchForFormChanges(onChange: () => void) {
-  const observer = new MutationObserver(() => onChange());
-  observer.observe(document.body, { childList: true, subtree: true });
+  let timeout: number | undefined;
+
+  const observer = new MutationObserver(() => {
+    clearTimeout(timeout);
+
+    timeout = window.setTimeout(() => {
+      onChange();
+    }, 500);
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+
   return observer;
 }
+
+chrome.runtime.onMessage.addListener((msg, sender) => {
+  console.log("[content-script] MESSAGE:", msg);
+  if (msg.type === "UNCERTAIN_COUNT" && sender.tab?.id !== undefined) {
+    chrome.action.setBadgeText({
+      tabId: sender.tab.id,
+      text: msg.count > 0 ? String(msg.count) : "",
+    });
+    chrome.action.setBadgeBackgroundColor({ color: "#f59e0b" });
+  }
+});
 
 async function run() {
   const { toFill, uncertain } = scanForm();
@@ -382,14 +497,18 @@ async function run() {
   }
   fillFields(toFill, profile);
 
+  // if (uncertain.length > 0) {
+  //   // popupille epävarmojen kenttien lista (chrome.runtime.sendMessage)
+  //   console.log(
+  //     "Epävarmat kentät:",
+  //     uncertain.map((f) => ({ signals: f.signals, confidence: f.confidence })),
+  //   );
+  // }
+
   if (uncertain.length > 0) {
-    // popupille epävarmojen kenttien lista (chrome.runtime.sendMessage)
-    console.log(
-      "Epävarmat kentät:",
-      uncertain.map((f) => ({ signals: f.signals, confidence: f.confidence })),
-    );
+    registerUncertain(uncertain);
   }
 }
-console.log("[content-script] ladattu, sivu:", location.href);
+// console.log("[content-script] ladattu, sivu:", location.href);
 watchForFormChanges(() => run());
 run();
