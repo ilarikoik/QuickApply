@@ -51,17 +51,19 @@ export default function Home() {
           Please add a profile to continue.
         </h1>
       ) : !isEditing ? (
-        <section className="flex h-fit flex-col items-center gap-4 rounded-lg border border-text p-8">
-          <h3 className="text-sm font-normal text-gray-500">
-            {profileLength} profile{profileLength > 1 ? "s" : ""}
+        <section className="flex h-fit flex-col items-center gap-4 rounded-lg border border-gray-300 p-8">
+          <h3 className="text-sm text-black font-bold">
+            {"("}
+            {profileLength}
+            {")"} Profile{profileLength > 1 ? "s" : ""}
           </h3>
 
-          <div className="rounded border border-gray-300 bg-background px-2 py-1 text-text">
+          <div className="rounded border border-gray-300 bg-background px-5 py-2 text-text text-start">
             {profiles.map((profile) => (
               <ul key={profile.id}>
                 <li
                   onClick={() => handleProfileChange(profile.id)}
-                  className="cursor-pointer"
+                  className="cursor-pointer font-black uppercase hover:text-primary m-1"
                 >
                   {profile.profileName}
                 </li>
@@ -70,8 +72,8 @@ export default function Home() {
           </div>
 
           <div className="flex flex-row items-center gap-2">
-            <p className="text-sm font-normal">
-              Current profile: {selectedProfile?.profileName ?? ""}
+            <p className="text-sm font-bold">
+              Nykyinen profiili: {selectedProfile?.profileName ?? ""}
             </p>
 
             <button

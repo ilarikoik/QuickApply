@@ -38,7 +38,7 @@ export default function Popup() {
       {isConnected === false && (
         <p>Aktiiviselta välilehdeltä ei saada yhteyttä lomakkeeseen.</p>
       )}
-      {isConnected && items.length === 0 && <p>Ei epävarmoja kenttiä ✅</p>}
+      {/* {isConnected && items.length === 0 && <p>Ei epävarmoja kenttiä ✅</p>} */}
 
       {items.map((i) => (
         <div key={i.uid} style={{ marginBottom: 8 }}>
