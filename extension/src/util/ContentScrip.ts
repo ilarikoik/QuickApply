@@ -64,7 +64,7 @@ const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   lastName: /last.?name|surname|family.?name|sukunimi/i,
   fullName: /full.?name|koko.?nimi|kokonimi/i,
   email: /e-?mail|sähköposti/i,
-  phone: /phone|mobile|\btel\b|Puhelinnumero/i,
+  phone: /phone|mobile|\btel\b|Puhelinnumero|Matkapuhelin|Puhelin/i,
   dateOfBirth: /date.?of.?birth|birth.?date|syntymäaika/i,
   // technologies: /technologies|skills|osaaminen|taitot/i,
   address:
@@ -84,7 +84,7 @@ const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   github: /github/i,
   portfolio: /portfolio/i,
   summary:
-    /summary|yhteenveto|about.?(me|you)|profile|miksi olisit sopiva työntekijä meille|esittely|kuvaus/i,
+    /summary|yhteenveto|about.?(me|you)|profile|miksi olisit sopiva työntekijä meille|esittely|kuvaus|kerro.?itsestäsi/i,
   coverLetter: /cover.?letter|motivation|saatekirje|hakemusteksti/i,
   salaryExpectation: /salary|compensation|palkkatoive|palkkatoivomus/i,
   availability:
@@ -137,14 +137,17 @@ function renderUncertainPopup() {
       :host { all: initial; position: fixed; z-index: 2147483647; right: 20px; bottom: 20px; }
       * { box-sizing: border-box; }
       .panel { width: 360px; max-height: min(70vh, 560px); overflow: auto; padding: 16px; border: 1px solid #dbe2ea; border-radius: 14px; background: #fff; color: #172033; box-shadow: 0 12px 40px #11182738; font: 14px/1.45 system-ui, sans-serif; }
-      .header, .field, .actions { display: flex; align-items: center; gap: 8px; }
+      .header, .field { display: flex; align-items: center; gap: 8px; }
+      .actions { display: flex; align-items: flex-end; gap: 8px; }
       .header { justify-content: space-between; margin-bottom: 8px; }
       h2 { margin: 0; font-size: 16px; }
       p { margin: 0 0 12px; color: #526071; }
       .close { border: 0; background: transparent; color: #526071; cursor: pointer; font-size: 21px; line-height: 1; }
       .item { padding: 10px 0; border-top: 1px solid #e8edf2; }
-      .label { overflow-wrap: anywhere; margin-bottom: 7px; font-weight: 600; }
+      .field-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+      .label { flex: 1; overflow-wrap: anywhere; margin-bottom: 7px; font-weight: 600; }
       .confidence { color: #657386; font-size: 12px; font-weight: 400; }
+      .dismiss-field { width: 24px; height: 20px; padding: 0; border: 0; background: transparent; color: #657386; cursor: pointer; font: 16px/1 system-ui, sans-serif; }
       select, button.action { min-height: 34px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; color: #172033; font: inherit; }
       select { min-width: 0; flex: 1; padding: 5px 7px; }
       button.action { padding: 5px 10px; cursor: pointer; }
@@ -197,6 +200,17 @@ function renderUncertainPopup() {
     confidence.textContent = ` (${Math.round(field.confidence * 100)} % varmuus)`;
     label.append(confidence);
 
+    const fieldHeading = document.createElement("div");
+    fieldHeading.className = "field-heading";
+    const dismissField = document.createElement("button");
+    dismissField.className = "dismiss-field";
+    dismissField.type = "button";
+    dismissField.textContent = "×";
+    dismissField.title = "Poista tämä kenttä popupista";
+    dismissField.setAttribute("aria-label", "Sulje tämä kenttä");
+    dismissField.addEventListener("click", () => dismissUncertainField(uid));
+    fieldHeading.append(label, dismissField);
+
     const actions = document.createElement("div");
     actions.className = "actions";
     const select = document.createElement("select");
@@ -225,7 +239,7 @@ function renderUncertainPopup() {
     fill.textContent = "Täytä";
     fill.addEventListener("click", () => fillUncertainField(uid, select.value));
     actions.append(select, show, fill);
-    item.append(label, actions);
+    item.append(fieldHeading, actions);
     panel.append(item);
   }
 }
@@ -237,6 +251,17 @@ function fillUncertainField(uid: string, fieldType: string) {
   field.type = fieldType as FieldType;
   field.element.dataset.afResolved = "true";
   getActiveProfile().then((profile) => profile && fillFields([field], profile));
+  field.element.style.outline = "";
+  uncertainMap.delete(uid);
+  updateUncertainCount(uncertainMap.size);
+  renderUncertainPopup();
+}
+
+function dismissUncertainField(uid: string) {
+  const field = uncertainMap.get(uid);
+  if (!field) return;
+
+  field.element.dataset.afResolved = "true";
   field.element.style.outline = "";
   uncertainMap.delete(uid);
   updateUncertainCount(uncertainMap.size);
