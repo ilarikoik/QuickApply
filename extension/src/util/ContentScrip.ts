@@ -3,7 +3,7 @@
 
 import type { Profile, ProfileFormData } from "../interface/ProfileInterface";
 import testData from "../testData.json";
-import type { Msg, UncertainDTO } from "./MessageTypes";
+import { FIELD_TYPES, type Msg, type UncertainDTO } from "./MessageTypes";
 
 type FieldType =
   | "firstName"
@@ -109,6 +109,139 @@ const AUTOCOMPLETE_MAP: Record<string, FieldType> = {
 };
 
 let uncertainMap = new Map<string, DetectedField>();
+let inPagePopupHost: HTMLDivElement | undefined;
+let inPagePopupDismissed = false;
+
+function updateUncertainCount(count: number) {
+  void chrome.runtime
+    .sendMessage({ type: "UNCERTAIN_COUNT", count } satisfies Msg)
+    .catch(() => {
+      // Badge on päivitysvalinnainen; sivun popup toimii ilman service workeriäkin.
+    });
+}
+
+function renderUncertainPopup() {
+  if (!document.body || inPagePopupDismissed) return;
+  if (uncertainMap.size === 0) {
+    inPagePopupHost?.remove();
+    inPagePopupHost = undefined;
+    return;
+  }
+
+  if (!inPagePopupHost) {
+    inPagePopupHost = document.createElement("div");
+    inPagePopupHost.id = "quickapply-uncertain-popup";
+    const shadow = inPagePopupHost.attachShadow({ mode: "open" });
+    const style = document.createElement("style");
+    style.textContent = `
+      :host { all: initial; position: fixed; z-index: 2147483647; right: 20px; bottom: 20px; }
+      * { box-sizing: border-box; }
+      .panel { width: 360px; max-height: min(70vh, 560px); overflow: auto; padding: 16px; border: 1px solid #dbe2ea; border-radius: 14px; background: #fff; color: #172033; box-shadow: 0 12px 40px #11182738; font: 14px/1.45 system-ui, sans-serif; }
+      .header, .field, .actions { display: flex; align-items: center; gap: 8px; }
+      .header { justify-content: space-between; margin-bottom: 8px; }
+      h2 { margin: 0; font-size: 16px; }
+      p { margin: 0 0 12px; color: #526071; }
+      .close { border: 0; background: transparent; color: #526071; cursor: pointer; font-size: 21px; line-height: 1; }
+      .item { padding: 10px 0; border-top: 1px solid #e8edf2; }
+      .label { overflow-wrap: anywhere; margin-bottom: 7px; font-weight: 600; }
+      .confidence { color: #657386; font-size: 12px; font-weight: 400; }
+      select, button.action { min-height: 34px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; color: #172033; font: inherit; }
+      select { min-width: 0; flex: 1; padding: 5px 7px; }
+      button.action { padding: 5px 10px; cursor: pointer; }
+      button.fill { border-color: #2563eb; background: #2563eb; color: #fff; }
+      button:focus-visible, select:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+    `;
+    const panel = document.createElement("section");
+    panel.className = "panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", "Epävarmat lomakekentät");
+    shadow.append(style, panel);
+    document.body.append(inPagePopupHost);
+  }
+
+  const panel = inPagePopupHost.shadowRoot?.querySelector(".panel");
+  if (!(panel instanceof HTMLElement)) return;
+  panel.replaceChildren();
+
+  const header = document.createElement("div");
+  header.className = "header";
+  const title = document.createElement("h2");
+  title.textContent = `Tarkista kentät (${uncertainMap.size})`;
+  const close = document.createElement("button");
+  close.className = "close";
+  close.type = "button";
+  close.textContent = "×";
+  close.setAttribute("aria-label", "Sulje epävarmojen kenttien ilmoitus");
+  close.addEventListener("click", () => {
+    inPagePopupDismissed = true;
+    inPagePopupHost?.remove();
+    inPagePopupHost = undefined;
+  });
+  header.append(title, close);
+
+  const intro = document.createElement("p");
+  intro.textContent = "Valitse kentälle sopiva tyyppi ja täytä se profiilista.";
+  panel.append(header, intro);
+
+  for (const [uid, field] of uncertainMap) {
+    const item = document.createElement("div");
+    item.className = "item";
+    const label = document.createElement("div");
+    label.className = "label";
+    label.textContent =
+      collectSignals(field.element)[0]?.text.trim().slice(0, 80) ||
+      field.element.name ||
+      "Nimeämätön kenttä";
+    const confidence = document.createElement("span");
+    confidence.className = "confidence";
+    confidence.textContent = ` (${Math.round(field.confidence * 100)} % varmuus)`;
+    label.append(confidence);
+
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", `Kentän tyyppi: ${label.textContent}`);
+    for (const type of FIELD_TYPES) {
+      const option = document.createElement("option");
+      option.value = type;
+      option.textContent = type;
+      option.selected = type === field.type;
+      select.append(option);
+    }
+
+    const show = document.createElement("button");
+    show.className = "action";
+    show.type = "button";
+    show.textContent = "Näytä";
+    show.addEventListener("click", () => {
+      field.element.scrollIntoView({ behavior: "smooth", block: "center" });
+      field.element.focus();
+      field.element.style.outline = "2px solid orange";
+    });
+
+    const fill = document.createElement("button");
+    fill.className = "action fill";
+    fill.type = "button";
+    fill.textContent = "Täytä";
+    fill.addEventListener("click", () => fillUncertainField(uid, select.value));
+    actions.append(select, show, fill);
+    item.append(label, actions);
+    panel.append(item);
+  }
+}
+
+function fillUncertainField(uid: string, fieldType: string) {
+  const field = uncertainMap.get(uid);
+  if (!field) return;
+
+  field.type = fieldType as FieldType;
+  field.element.dataset.afResolved = "true";
+  getActiveProfile().then((profile) => profile && fillFields([field], profile));
+  field.element.style.outline = "";
+  uncertainMap.delete(uid);
+  updateUncertainCount(uncertainMap.size);
+  renderUncertainPopup();
+}
 
 function registerUncertain(fields: DetectedField[]) {
   uncertainMap = new Map();
@@ -117,10 +250,8 @@ function registerUncertain(fields: DetectedField[]) {
     f.element.dataset.afUid = uid;
     uncertainMap.set(uid, f);
   });
-  chrome.runtime.sendMessage({
-    type: "UNCERTAIN_COUNT",
-    count: uncertainMap.size,
-  } satisfies Msg);
+  updateUncertainCount(uncertainMap.size);
+  renderUncertainPopup();
 }
 
 chrome.runtime.onMessage.addListener((msg: Msg, _sender, sendResponse) => {
@@ -146,17 +277,7 @@ chrome.runtime.onMessage.addListener((msg: Msg, _sender, sendResponse) => {
   }
 
   if (msg.type === "FILL_FIELD") {
-    const f = uncertainMap.get(msg.uid);
-    if (f) {
-      f.type = msg.fieldType as FieldType;
-      getActiveProfile().then((p) => p && fillFields([f], p));
-      f.element.style.outline = "";
-      uncertainMap.delete(msg.uid);
-      chrome.runtime.sendMessage({
-        type: "UNCERTAIN_COUNT",
-        count: uncertainMap.size,
-      } satisfies Msg);
-    }
+    fillUncertainField(msg.uid, msg.fieldType);
   }
 });
 
@@ -326,9 +447,26 @@ function scanForm(): { toFill: DetectedField[]; uncertain: DetectedField[] } {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >("input, textarea, select"),
   ).filter((el) => {
-    // Jobbsivustojen sijaintihaku (ei hakijan profiilikenttä); täyttö avaa
-    // ehdotuslistan, jonka DOM-muutokset käynnistäisivät skannauksen uudelleen.
-    if (el.closest(".geosuggest")) return false;
+    // Älä tarjoa popupissa jo käsiteltyä epävarmaa kenttää uudelleen,
+    // vaikka lomakkeen DOM-muutokset käynnistäisivät uuden skannauksen.
+    if (el.dataset.afResolved === "true") return false;
+
+    // Työnhakusivustojen hakukentät eivät ole hakijan profiilikenttiä.
+    // Niiden täyttäminen voi myös lisätä sijainnin tageihin ja käynnistää
+    // MutationObserverin kautta uuden täyttökierroksen (esim. Duunitorin haku).
+    if (
+      el.closest(".geosuggest, #area-autocomplete, .taggle_input") ||
+      (el instanceof HTMLInputElement &&
+        (el.type === "search" ||
+          // Careerjetin työnhakusuodatin on type="text" mutta merkitty
+          // data-ac/data-loc-attribuuteilla ja yleisellä sijaintiplaceholderilla.
+          el.hasAttribute("data-ac") ||
+          el.hasAttribute("data-loc") ||
+          /^(kaupunki, alue tai maa|city, region or country)$/i.test(
+            el.placeholder.trim(),
+          )))
+    )
+      return false;
     if (el instanceof HTMLInputElement && el.type === "hidden") return false;
     if (
       el instanceof HTMLInputElement &&
@@ -467,17 +605,6 @@ function watchForFormChanges(onChange: () => void) {
   return observer;
 }
 
-chrome.runtime.onMessage.addListener((msg, sender) => {
-  console.log("[content-script] MESSAGE:", msg);
-  if (msg.type === "UNCERTAIN_COUNT" && sender.tab?.id !== undefined) {
-    chrome.action.setBadgeText({
-      tabId: sender.tab.id,
-      text: msg.count > 0 ? String(msg.count) : "",
-    });
-    chrome.action.setBadgeBackgroundColor({ color: "#f59e0b" });
-  }
-});
-
 async function run() {
   const { toFill, uncertain } = scanForm();
 
@@ -488,6 +615,7 @@ async function run() {
     "[content-script] toFill:",
     toFill.map((f) => ({ type: f.type, confidence: f.confidence })),
   );
+  registerUncertain(uncertain);
 
   // hae oikea data
   const profile = await getActiveProfile();
@@ -504,10 +632,6 @@ async function run() {
   //     uncertain.map((f) => ({ signals: f.signals, confidence: f.confidence })),
   //   );
   // }
-
-  if (uncertain.length > 0) {
-    registerUncertain(uncertain);
-  }
 }
 // console.log("[content-script] ladattu, sivu:", location.href);
 watchForFormChanges(() => run());

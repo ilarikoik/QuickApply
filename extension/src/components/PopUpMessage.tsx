@@ -1,33 +1,5 @@
 import { useEffect, useState } from "react";
-import type { UncertainDTO } from "../util/MessageTypes";
-
-const TYPES = [
-  "firstName",
-  "lastName",
-  "fullName",
-  "email",
-  "phone",
-  "dateOfBirth",
-  "address",
-  "location",
-  "city",
-  "postalCode",
-  "country",
-  "currentTitle",
-  "yearsOfExperience",
-  "education",
-  "school",
-  "graduationYear",
-  "reference",
-  "linkedin",
-  "github",
-  "portfolio",
-  "summary",
-  "coverLetter",
-  "salaryExpectation",
-  "availability",
-  "willingToRelocate",
-];
+import { FIELD_TYPES, type UncertainDTO } from "../util/MessageTypes";
 
 export default function Popup() {
   const [items, setItems] = useState<UncertainDTO[]>([]);
@@ -100,7 +72,7 @@ export default function Popup() {
               load();
             }}
           >
-            {TYPES.map((t) => (
+            {FIELD_TYPES.map((t) => (
               <option key={t} value={t}>
                 {t}
               </option>
