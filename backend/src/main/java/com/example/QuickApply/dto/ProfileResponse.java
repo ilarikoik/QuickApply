@@ -1,0 +1,30 @@
+package com.example.QuickApply.dto;
+
+public record ProfileResponse(
+        Long id,
+        String profileName,
+        String firstName,
+        String lastName,
+        String fullName,
+        String email,
+        String phone,
+        String dateOfBirth,
+        String address,
+        String city,
+        String postalCode,
+        String country,
+        LocalizedTextDto currentTitle,
+        String yearsOfExperience,
+        LocalizedTextDto education,
+        String school,
+        String graduationYear,
+        String reference,
+        String linkedin,
+        String github,
+        String portfolio,
+        LocalizedTextDto summary,
+        LocalizedTextDto coverLetter,
+        String salaryExpectation,
+        LocalizedTextDto availability,
+        boolean willingToRelocate) {
+}
