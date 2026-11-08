@@ -39,9 +39,9 @@ Full testing across multiple recruitment sites, documentation, thesis writeup.
 
 ## Roadmap
 
-- [ ] **Aug 10 – Aug 31, 2026** — Backend-less prototype, local storage, real-world field-detection validation
-- [ ] **Sep 1 – Sep 15, 2026** — Backend: user accounts, JWT auth, profile management, application history, duplicate detection
-- [ ] **Sep 15 – Oct 12, 2026** — Full testing, documentation, thesis report
+- [ ] ** — Backend-less prototype, local storage, real-world field-detection validation
+- [ ] ** — Backend: user accounts, JWT auth, profile management, application history, duplicate detection
+- [ ] ** — Full testing, documentation, thesis report
 
 ## Why this project
 
