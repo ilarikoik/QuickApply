@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { translateText } from "../lib/translate";
 
 import type { ProfileFormData } from "../interface/ProfileInterface";
+import { saveProfile, toProfileFormData } from "../lib/api";
 
 const initialFormData: ProfileFormData = {
   id: 0,
@@ -79,27 +80,52 @@ const inputClasses =
   "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 transition";
 
 interface AddProfileProps {
+  token: string;
   profile?: ProfileFormData;
+  onSaved?: (profile: ProfileFormData) => void | Promise<void>;
   onBack: () => void;
 }
 
-export default function AddProfile({ profile, onBack }: AddProfileProps) {
+export default function AddProfile({
+  token,
+  profile,
+  onSaved,
+  onBack,
+}: AddProfileProps) {
   const [step, setStep] = useState(1);
   const [translatingField, setTranslatingField] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [formData, setFormData] = useState<ProfileFormData>(
     profile ?? initialFormData,
   );
 
-  useEffect(() => {
-    setFormData(profile ?? initialFormData);
-  }, [profile]);
-
   const goNext = () => setStep((s) => Math.min(s + 1, steps.length));
   const goPrev = () => setStep((s) => Math.max(s - 1, 1));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSave = async () => {
+    if (step !== steps.length || saving) return;
+    setSaving(true);
+    setError("");
+    try {
+      const saved = await saveProfile(token, formData);
+      const savedProfile = toProfileFormData(saved);
+      if (onSaved) await onSaved(savedProfile);
+      else onBack();
+    } catch (cause) {
+      console.error("Could not save profile:", cause);
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Profiilin tallentaminen epäonnistui.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const preventImplicitSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Profiilin tiedot:", formData);
   };
 
   const handleChange = (
@@ -110,7 +136,12 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
   };
 
   const handleLocalizedChange = (
-    field: "currentTitle" | "education" | "summary" | "availability",
+    field:
+      | "currentTitle"
+      | "education"
+      | "summary"
+      | "coverLetter"
+      | "availability",
     lang: "fi" | "en",
     value: string,
   ) => {
@@ -123,17 +154,20 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
   const handleTranslateAll = async () => {
     setTranslatingField("all");
     try {
-      const [titleEn, eduEn, summaryEn, availEn] = await Promise.all([
-        translateText(formData.currentTitle.fi, "EN"),
-        translateText(formData.education.fi, "EN"),
-        translateText(formData.summary.fi, "EN"),
-        translateText(formData.availability.fi, "EN"),
-      ]);
+      const [titleEn, eduEn, summaryEn, coverLetterEn, availEn] =
+        await Promise.all([
+          translateText(formData.currentTitle.fi, "EN"),
+          translateText(formData.education.fi, "EN"),
+          translateText(formData.summary.fi, "EN"),
+          translateText(formData.coverLetter.fi, "EN"),
+          translateText(formData.availability.fi, "EN"),
+        ]);
       setFormData((prev) => ({
         ...prev,
         currentTitle: { ...prev.currentTitle, en: titleEn },
         education: { ...prev.education, en: eduEn },
         summary: { ...prev.summary, en: summaryEn },
+        coverLetter: { ...prev.coverLetter, en: coverLetterEn },
         availability: { ...prev.availability, en: availEn },
       }));
     } catch (err) {
@@ -150,6 +184,10 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
         },
         summary: {
           ...prev.summary,
+          en: "Error while translating, please fill manually",
+        },
+        coverLetter: {
+          ...prev.coverLetter,
           en: "Error while translating, please fill manually",
         },
         availability: {
@@ -203,7 +241,20 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
         ))}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={preventImplicitSubmit} className="space-y-4">
+        {step === 1 && (
+          <Field label="Profiilin nimi">
+            <input
+              type="text"
+              required
+              maxLength={100}
+              className={inputClasses}
+              placeholder="Esim. Ohjelmistokehittäjä"
+              value={formData.profileName}
+              onChange={(e) => handleChange("profileName", e.target.value)}
+            />
+          </Field>
+        )}
         {step === 1 && (
           <>
             <div className="grid grid-cols-2 gap-4">
@@ -407,6 +458,17 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
                 }
               />
             </Field>
+            <Field label="Hakemusteksti (suomeksi)">
+              <textarea
+                maxLength={10000}
+                className={`${inputClasses} min-h-40 resize-y`}
+                placeholder="Kirjoita hakemustekstisi..."
+                value={formData.coverLetter.fi}
+                onChange={(e) =>
+                  handleLocalizedChange("coverLetter", "fi", e.target.value)
+                }
+              />
+            </Field>
             <div className="grid grid-cols-2 gap-4">
               <Field label="Palkkatoive (€/kk)">
                 <input
@@ -495,6 +557,18 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
               />
             </Field>
 
+            <Field label="Cover letter">
+              <textarea
+                maxLength={10000}
+                className={`${inputClasses} min-h-40 resize-y`}
+                placeholder="Write your cover letter..."
+                value={formData.coverLetter.en}
+                onChange={(e) =>
+                  handleLocalizedChange("coverLetter", "en", e.target.value)
+                }
+              />
+            </Field>
+
             <Field label="Availability">
               <input
                 type="text"
@@ -529,13 +603,20 @@ export default function AddProfile({ profile, onBack }: AddProfileProps) {
             </button>
           ) : (
             <button
-              type="submit"
-              className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
+              type="button"
+              onClick={handleSave}
+              disabled={saving}
+              className="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:opacity-50"
             >
-              Tallenna profiili
+              {saving ? "Tallennetaan..." : "Tallenna profiili"}
             </button>
           )}
         </div>
+        {error && (
+          <p role="alert" className="text-sm text-red-600">
+            {error}
+          </p>
+        )}
       </form>
     </div>
   );

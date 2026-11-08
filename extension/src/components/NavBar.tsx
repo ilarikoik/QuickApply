@@ -1,6 +1,6 @@
 import { useTheme } from "../theme/ThemeContext";
 
-export default function NavBar() {
+export default function NavBar({ onLogout }: { onLogout: () => void }) {
   const { themeName, toggleTheme } = useTheme();
 
   return (
@@ -20,9 +20,13 @@ export default function NavBar() {
       >
         Lisää profiili
       </button>
-      <ul className="flex space-x-4 font-semibold font-mono text-red-400">
-        <li>Logout</li>
-      </ul>
+      <button
+        type="button"
+        onClick={onLogout}
+        className="font-semibold font-mono text-red-400 hover:underline"
+      >
+        Kirjaudu ulos
+      </button>
     </div>
   );
 }

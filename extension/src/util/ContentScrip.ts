@@ -2,8 +2,13 @@
 // Ajetaan jokaisella rekrytointisivustolla (manifest.json: content_scripts)
 
 import type { Profile, ProfileFormData } from "../interface/ProfileInterface";
-import testData from "../testData.json";
-import { FIELD_TYPES, type Msg, type UncertainDTO } from "./MessageTypes";
+import {
+  FIELD_TYPES,
+  type ActiveProfileResponse,
+  type FillAllResponse,
+  type Msg,
+  type UncertainDTO,
+} from "./MessageTypes";
 
 type FieldType =
   | "firstName"
@@ -35,8 +40,6 @@ type FieldType =
   | "willingToRelocate"
   | "unknown";
 // technologies - Which technologies have you worked with?
-// muista muokata testDataa oikein
-
 //{ fi, en } eikä pelkkä string
 const LOCALIZED_FIELDS: FieldType[] = [
   "currentTitle",
@@ -54,19 +57,17 @@ interface LocalizedValue {
 interface DetectedField {
   element: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
   type: FieldType;
-  confidence: number; // 0–1
-  signals: string[]; // debug: mistä matchi tuli
+  confidence: number;
+  signals: string[];
 }
 
-// regex
 const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   firstName: /first.?name|given.?name|etunimi|preferred name/i,
   lastName: /last.?name|surname|family.?name|sukunimi/i,
-  fullName: /full.?name|koko.?nimi|kokonimi/i,
+  fullName: /full.?name|koko.?nimi|kokonimi|nimi/i,
   email: /e-?mail|sähköposti/i,
   phone: /phone|mobile|\btel\b|Puhelinnumero|Matkapuhelin|Puhelin/i,
   dateOfBirth: /date.?of.?birth|birth.?date|syntymäaika/i,
-  // technologies: /technologies|skills|osaaminen|taitot/i,
   address:
     /\baddress\b|address.?line|street.?address|katuosoite|lähiosoite|kotiosoite|osoiterivi|\bosoite\b/i,
   city: /\bcity\b|\btown\b|paikkakunta|kaupunki/i,
@@ -84,7 +85,7 @@ const PATTERNS: Record<Exclude<FieldType, "unknown">, RegExp> = {
   github: /github/i,
   portfolio: /portfolio/i,
   summary:
-    /summary|yhteenveto|about.?(me|you)|profile|miksi olisit sopiva työntekijä meille|esittely|kuvaus|kerro.?itsestäsi/i,
+    /summary|yhteenveto|about.?(me|you)|profile|miksi olisit sopiva työntekijä meille|esittely|kuvaus|kerro.?itsestäsi|Kerro lyhyesti itsestäsi/i,
   coverLetter: /cover.?letter|motivation|saatekirje|hakemusteksti/i,
   salaryExpectation: /salary|compensation|palkkatoive|palkkatoivomus/i,
   availability:
@@ -109,6 +110,7 @@ const AUTOCOMPLETE_MAP: Record<string, FieldType> = {
 };
 
 let uncertainMap = new Map<string, DetectedField>();
+let detectedFields: DetectedField[] = [];
 let inPagePopupHost: HTMLDivElement | undefined;
 let inPagePopupDismissed = false;
 
@@ -294,6 +296,43 @@ chrome.runtime.onMessage.addListener((msg: Msg, _sender, sendResponse) => {
     return; // sync response
   }
 
+  if (msg.type === "FILL_ALL") {
+    void (async () => {
+      try {
+        const { toFill, uncertain } = scanForm();
+        detectedFields = [...toFill, ...uncertain];
+        registerUncertain(uncertain);
+
+        const profile = await getActiveProfile();
+        if (!profile) {
+          sendResponse({
+            filled: 0,
+            detected: detectedFields.length,
+            error: "Backendistä ei löytynyt profiilia. Luo profiili ensin.",
+          } satisfies FillAllResponse);
+          return;
+        }
+
+        const filled = fillFields(detectedFields, profile);
+        sendResponse({
+          filled,
+          detected: detectedFields.length,
+        } satisfies FillAllResponse);
+      } catch (cause) {
+        console.error("Could not fill form:", cause);
+        sendResponse({
+          filled: 0,
+          detected: detectedFields.length,
+          error:
+            cause instanceof Error
+              ? cause.message
+              : "Profiilia ei voitu hakea tai lomaketta täyttää.",
+        } satisfies FillAllResponse);
+      }
+    })();
+    return true;
+  }
+
   if (msg.type === "HIGHLIGHT_FIELD") {
     const el = uncertainMap.get(msg.uid)?.element;
     el?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -307,11 +346,11 @@ chrome.runtime.onMessage.addListener((msg: Msg, _sender, sendResponse) => {
 });
 
 async function getActiveProfile(): Promise<ProfileFormData | undefined> {
-  const profiles = testData as ProfileFormData[];
-  const result = await chrome.storage.local.get("activeProfileId");
-  const activeId = result.activeProfileId as number | undefined;
-  if (activeId === undefined) return profiles[0]; // fallback
-  return profiles.find((p) => p.id === activeId);
+  const result = (await chrome.runtime.sendMessage({
+    type: "GET_ACTIVE_PROFILE",
+  })) as ActiveProfileResponse;
+  if (result.error) throw new Error(result.error);
+  return result.profile;
 }
 
 // yksittäisen kentän analyysi
@@ -562,6 +601,17 @@ function resolveValue(
     if (city && country) return `${city}, ${country}`;
     return city || country;
   }
+  if (type === "fullName") {
+    const firstName = profile["firstName"];
+    const lastName = profile["lastName"];
+    return [firstName, lastName]
+      .filter(
+        (name): name is string =>
+          typeof name === "string" && name.trim().length > 0,
+      )
+      .join(" ");
+  }
+
   const raw = profile[type];
   if (raw === undefined) return undefined;
 
@@ -577,8 +627,9 @@ function resolveValue(
 function fillFields(
   fields: DetectedField[],
   profile: Record<string, string | number | LocalizedValue | boolean>,
-) {
+): number {
   const lang = detectPageLanguage();
+  let filled = 0;
 
   for (const field of fields) {
     if (field.type === "unknown") continue;
@@ -590,15 +641,41 @@ function fillFields(
     )
       continue;
 
-    const value = resolveValue(field.type, profile, lang);
-    if (!value) continue;
-
     try {
+      if (
+        field.type === "willingToRelocate" &&
+        field.element instanceof HTMLInputElement &&
+        field.element.type === "checkbox"
+      ) {
+        const value = profile.willingToRelocate;
+        if (typeof value === "boolean" && field.element.checked !== value) {
+          field.element.click();
+        }
+        if (typeof value === "boolean") filled++;
+        continue;
+      }
+
+      const value = resolveValue(field.type, profile, lang);
+      if (!value) continue;
+
       if (
         field.element instanceof HTMLInputElement ||
         field.element instanceof HTMLTextAreaElement
       ) {
         setNativeValue(field.element, value);
+        filled++;
+      } else if (field.element instanceof HTMLSelectElement) {
+        const option = Array.from(field.element.options).find(
+          (item) =>
+            item.value.toLowerCase() === value.toLowerCase() ||
+            item.text.trim().toLowerCase() === value.trim().toLowerCase(),
+        );
+        if (option) {
+          field.element.value = option.value;
+          field.element.dispatchEvent(new Event("input", { bubbles: true }));
+          field.element.dispatchEvent(new Event("change", { bubbles: true }));
+          filled++;
+        }
       }
     } catch (err) {
       // yksittäisen kentän virhe ei saa pysäyttää koko täyttöä
@@ -609,6 +686,7 @@ function fillFields(
       );
     }
   }
+  return filled;
 }
 
 function watchForFormChanges(onChange: () => void) {
@@ -632,6 +710,7 @@ function watchForFormChanges(onChange: () => void) {
 
 async function run() {
   const { toFill, uncertain } = scanForm();
+  detectedFields = [...toFill, ...uncertain];
 
   console.log(
     `[content-script] löytyi ${toFill.length} täytettävää, ${uncertain.length} epävarmaa`,
@@ -641,14 +720,6 @@ async function run() {
     toFill.map((f) => ({ type: f.type, confidence: f.confidence })),
   );
   registerUncertain(uncertain);
-
-  // hae oikea data
-  const profile = await getActiveProfile();
-  if (!profile) {
-    console.warn("[content-script] profiilia ei löytynyt testidatasta");
-    return;
-  }
-  fillFields(toFill, profile);
 
   // if (uncertain.length > 0) {
   //   // popupille epävarmojen kenttien lista (chrome.runtime.sendMessage)

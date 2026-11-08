@@ -24,7 +24,7 @@
     "school": "Haaga-Helia ammattikorkeakoulu",
     "graduationYear": "2026",
     "reference": "",
-    "linkedin": "ei ole",
+    "linkedin": "https://esimerkki.fi",
     "github": "https://github.com/ilarikoi",
     "portfolio": "https://cv-two-gamma-34.vercel.app/",
     "summary": {
@@ -45,9 +45,9 @@
   {
     "id": 2,
     "profileName": "fullstack",
-    "firstName": "UKKO",
+    "firstName": "Testi",
     "lastName": "Koikkalainen",
-    "fullName": "UKKO Koikkalainen",
+    "fullName": "Testi Koikkalainen",
     "email": "ilari.koikkalainen@example.com",
     "phone": "+358 40 1234567",
     "dateOfBirth": "1999-05-14",

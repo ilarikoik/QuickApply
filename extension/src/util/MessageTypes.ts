@@ -1,8 +1,23 @@
+import type { ProfileFormData } from "../interface/ProfileInterface";
+
 export type Msg =
   | { type: "UNCERTAIN_COUNT"; count: number }
+  | { type: "GET_ACTIVE_PROFILE" }
   | { type: "GET_UNCERTAIN" }
+  | { type: "FILL_ALL" }
   | { type: "FILL_FIELD"; uid: string; fieldType: string }
   | { type: "HIGHLIGHT_FIELD"; uid: string };
+
+export interface ActiveProfileResponse {
+  profile?: ProfileFormData;
+  error?: string;
+}
+
+export interface FillAllResponse {
+  filled: number;
+  detected: number;
+  error?: string;
+}
 
 export const FIELD_TYPES = [
   "firstName",
