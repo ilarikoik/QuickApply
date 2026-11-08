@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="960" viewBox="0 0 1500 960" role="img" aria-labelledby="title description">
+  <title id="title">QuickApply-selainlaajennuksen ja backendin arkkitehtuuri</title>
+  <desc id="description">Kaavio näyttää nykyisen popupin, content scriptin ja service workerin välisen viestinnän sekä katkoviivalla suunnitellun backend-yhteyden.</desc>
+  <defs>
+    <marker id="arrow-current" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#176b5b"/>
+    </marker>
+    <marker id="arrow-planned" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a65d12"/>
+    </marker>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #1c2938; }
+      .title { font-size: 30px; font-weight: 700; fill: #fff; }
+      .subtitle { font-size: 15px; fill: #dbeafe; }
+      .area { font-size: 15px; font-weight: 700; letter-spacing: 1.2px; fill: #496176; }
+      .box-title { font-size: 20px; font-weight: 700; }
+      .box-subtitle { font-size: 14px; font-weight: 600; fill: #40546a; }
+      .body { font-size: 14px; }
+      .small { font-size: 12px; fill: #526477; }
+      .arrow-label { font-size: 13px; font-weight: 600; }
+      .legend { font-size: 13px; }
+    </style>
+  </defs>
+
+  <rect width="1500" height="960" fill="#f3f6fa"/>
+  <rect width="1500" height="108" fill="#17324d"/>
+  <text x="54" y="51" class="title">QuickApply – selainlaajennuksen arkkitehtuuri</text>
+  <text x="56" y="80" class="subtitle">Nykyinen laajennuksen viestinvälitys ja suunniteltu yhteys Spring Boot -backendiin</text>
+
+  <text x="58" y="151" class="area">KÄYTTÄJÄN SELAIN</text>
+  <text x="525" y="151" class="area">CHROME-LAAJENNUS (MANIFEST V3)</text>
+  <text x="1050" y="151" class="area">BACKEND JA TIETOKANTA</text>
+
+  <rect x="52" y="180" width="420" height="600" rx="18" fill="#eaf0f6" stroke="#cad5e1" stroke-width="2"/>
+  <rect x="512" y="180" width="480" height="600" rx="18" fill="#eaf5f2" stroke="#b8d6cc" stroke-width="2"/>
+  <rect x="1032" y="180" width="416" height="600" rx="18" fill="#f8f1e8" stroke="#e2cfb7" stroke-width="2"/>
+
+  <rect x="82" y="231" width="360" height="192" rx="14" fill="#fff" stroke="#8299ad" stroke-width="2"/>
+  <text x="106" y="268" class="box-title">Rekrytointisivu</text>
+  <text x="106" y="296" class="body">Verkkosivun hakemuslomake</text>
+  <line x1="106" y1="316" x2="418" y2="316" stroke="#dce4eb"/>
+  <text x="106" y="344" class="box-subtitle">Content script</text>
+  <text x="106" y="369" class="body">• tunnistaa lomakekentät</text>
+  <text x="106" y="391" class="body">• täyttää kenttiä ja näyttää tarkistettavat</text>
+
+  <rect x="82" y="488" width="360" height="150" rx="14" fill="#fff" stroke="#8299ad" stroke-width="2"/>
+  <text x="106" y="526" class="box-title">Käyttäjä</text>
+  <text x="106" y="555" class="body">Tarkistaa epävarmat kentät ja</text>
+  <text x="106" y="579" class="body">käynnistää täytön popupista.</text>
+  <text x="106" y="610" class="small">Lomaketta ei lähetetä automaattisesti.</text>
+
+  <rect x="548" y="220" width="408" height="174" rx="14" fill="#fff" stroke="#4c8f7d" stroke-width="2"/>
+  <text x="572" y="258" class="box-title">Popup (React)</text>
+  <text x="572" y="286" class="body">Näyttää epävarmat kentät ja niiden arvaukset.</text>
+  <text x="572" y="311" class="body">Välittää käyttäjän pyynnöt aktiiviselle välilehdelle:</text>
+  <text x="588" y="340" class="small">GET_UNCERTAIN · FILL_ALL · FILL_FIELD · HIGHLIGHT_FIELD</text>
+  <text x="572" y="371" class="small">chrome.tabs.sendMessage</text>
+
+  <rect x="548" y="472" width="408" height="126" rx="14" fill="#fff" stroke="#4c8f7d" stroke-width="2"/>
+  <text x="572" y="510" class="box-title">Service worker</text>
+  <text x="572" y="538" class="body">Vastaanottaa UNCERTAIN_COUNT-viestin</text>
+  <text x="572" y="561" class="body">ja päivittää välilehden tunnistekuvakkeen.</text>
+  <text x="572" y="584" class="small">Ei nykyisin välitä API-pyyntöjä backendille.</text>
+
+  <rect x="548" y="650" width="408" height="94" rx="14" fill="#fff" stroke="#4c8f7d" stroke-width="2"/>
+  <text x="572" y="687" class="box-title">Paikalliset profiilit</text>
+  <text x="572" y="716" class="body">testData.json + aktiivisen profiilin tunniste tallennustilassa</text>
+
+  <rect x="1068" y="230" width="344" height="252" rx="14" fill="#fff" stroke="#bc8750" stroke-width="2"/>
+  <text x="1092" y="268" class="box-title">Spring Boot REST API</text>
+  <text x="1092" y="296" class="box-subtitle">Toteutettu backend</text>
+  <text x="1092" y="327" class="body">• rekisteröinti ja kirjautuminen</text>
+  <text x="1092" y="352" class="body">• JWT-tunnistautuminen</text>
+  <text x="1092" y="377" class="body">• profiilien ja työhakemusten rajapinnat</text>
+  <line x1="1092" y1="396" x2="1388" y2="396" stroke="#eadcc9"/>
+  <text x="1092" y="426" class="small">Laajennuksen frontend ei ole vielä kytketty</text>
+  <text x="1092" y="447" class="small">rajapintaan; yhteys on seuraava integraatiovaihe.</text>
+
+  <rect x="1068" y="586" width="344" height="126" rx="14" fill="#fff" stroke="#bc8750" stroke-width="2"/>
+  <text x="1092" y="624" class="box-title">Tietokanta</text>
+  <text x="1092" y="653" class="body">PostgreSQL (tavoiteympäristö)</text>
+  <text x="1092" y="679" class="small">H2 on backendin oletus paikallisajossa.</text>
+
+  <path d="M442 314 H548" fill="none" stroke="#176b5b" stroke-width="3" marker-end="url(#arrow-current)"/>
+  <path d="M548 353 H442" fill="none" stroke="#176b5b" stroke-width="3" marker-end="url(#arrow-current)"/>
+  <rect x="446" y="283" width="96" height="26" rx="8" fill="#f3f6fa"/>
+  <text x="451" y="301" class="arrow-label" fill="#176b5b">viestit</text>
+
+  <path d="M442 389 C496 389 500 523 548 523" fill="none" stroke="#176b5b" stroke-width="3" marker-end="url(#arrow-current)"/>
+  <rect x="452" y="439" width="96" height="40" rx="8" fill="#f3f6fa"/>
+  <text x="458" y="456" class="arrow-label">UNCERTAIN_</text>
+  <text x="458" y="472" class="arrow-label">COUNT</text>
+
+  <path d="M548 702 C486 702 498 410 442 410" fill="none" stroke="#176b5b" stroke-width="3" marker-end="url(#arrow-current)"/>
+  <rect x="454" y="650" width="90" height="40" rx="8" fill="#f3f6fa"/>
+  <text x="460" y="667" class="arrow-label">profiilin</text>
+  <text x="460" y="683" class="arrow-label">haku</text>
+
+  <path d="M956 287 H1068" fill="none" stroke="#a65d12" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow-planned)"/>
+  <path d="M1068 352 H956" fill="none" stroke="#a65d12" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow-planned)"/>
+  <rect x="959" y="248" width="106" height="29" rx="8" fill="#f3f6fa"/>
+  <text x="965" y="268" class="arrow-label" fill="#8a4d0c">HTTPS + JWT</text>
+  <rect x="963" y="362" width="100" height="42" rx="8" fill="#f3f6fa"/>
+  <text x="970" y="379" class="arrow-label" fill="#8a4d0c">profiilit /</text>
+  <text x="970" y="395" class="arrow-label" fill="#8a4d0c">hakemukset</text>
+
+  <path d="M1240 482 V586" fill="none" stroke="#a65d12" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow-planned)"/>
+  <text x="1253" y="537" class="arrow-label" fill="#8a4d0c">JPA</text>
+
+  <line x1="72" y1="842" x2="132" y2="842" stroke="#176b5b" stroke-width="3" marker-end="url(#arrow-current)"/>
+  <text x="146" y="847" class="legend">Nykyisin toimiva viestintä ja paikallinen profiilitieto</text>
+  <line x1="72" y1="881" x2="132" y2="881" stroke="#a65d12" stroke-width="3" stroke-dasharray="9 7" marker-end="url(#arrow-planned)"/>
+  <text x="146" y="886" class="legend">Backend-yhteys ja tietokannan käyttö (frontend-integraatio suunnitteilla)</text>
+  <text x="1428" y="930" text-anchor="end" class="small">QuickApply · arkkitehtuurikuva</text>
+</svg>
