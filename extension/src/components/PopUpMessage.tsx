@@ -54,7 +54,7 @@ export default function Popup() {
       setItems([]);
       setError(
         isWebPage
-          ? "Päivitä verkkosivu (F5) ja avaa laajennus uudelleen. Jos yhteys ei palaudu, tarkista Chromen laajennusasetuksista QuickApply-sivuston käyttöoikeus."
+          ? "Avaa lomake tai päivitä verkkosivu (F5) ja avaa laajennus uudelleen. Jos yhteys ei palaudu, tarkista Chromen laajennusasetuksista QuickApply-sivuston käyttöoikeus."
           : "Chrome ei salli lomakkeeseen yhdistämistä tällä sivulla. Avaa tavallinen verkkosivu, jossa on lomake.",
       );
     }
@@ -83,7 +83,9 @@ export default function Popup() {
         type: "FILL_ALL",
       })) as FillAllResponse | undefined;
       if (!result) {
-        throw new Error("Sivulta ei saatu vastausta. Päivitä sivu ja yritä uudelleen.");
+        throw new Error(
+          "Sivulta ei saatu vastausta. Päivitä sivu ja yritä uudelleen.",
+        );
       }
       await load();
       if (result.error) {
@@ -113,7 +115,10 @@ export default function Popup() {
     <div style={{ width: 320, padding: 12 }}>
       {isConnected === false && (
         <div>
-          <p>{error || "Aktiiviselta välilehdeltä ei saada yhteyttä lomakkeeseen."}</p>
+          <p>
+            {error ||
+              "Aktiiviselta välilehdeltä ei saada yhteyttä lomakkeeseen."}
+          </p>
           {canReloadTab && (
             <button type="button" onClick={reloadActiveTab}>
               Päivitä välilehti
